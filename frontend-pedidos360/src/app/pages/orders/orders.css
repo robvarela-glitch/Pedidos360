@@ -1,0 +1,150 @@
+.orders-container {
+  min-height: 100vh;
+  padding: 35px 40px;
+  background: #f4f6f9;
+  font-family: Arial, sans-serif;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.page-header h2 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.page-header p {
+  margin-top: 6px;
+  color: #6b7280;
+}
+
+.new-order-button {
+  padding: 12px 18px;
+  border: none;
+  border-radius: 8px;
+  background: #2563eb;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.new-order-button:hover {
+  background: #1d4ed8;
+}
+
+.filters {
+  display: flex;
+  gap: 15px;
+  margin: 30px 0 20px;
+}
+
+.filters input,
+.filters select {
+  padding: 12px 15px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: white;
+  font-size: 14px;
+}
+
+.filters input {
+  flex: 1;
+}
+
+.orders-card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
+}
+
+.table-header,
+.order-row {
+  display: grid;
+  grid-template-columns: 1.1fr 2fr 1.3fr 1.5fr 1.2fr 0.8fr;
+  align-items: center;
+  gap: 15px;
+  padding: 18px 22px;
+}
+
+.table-header {
+  color: #6b7280;
+  font-size: 13px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.order-row {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.order-row:last-child {
+  border-bottom: none;
+}
+
+.status {
+  width: fit-content;
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+.accepted {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.preparation {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.dispatched {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
+.delivered {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.cancelled {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.view-button {
+  padding: 7px 13px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: white;
+  color: #2563eb;
+  cursor: pointer;
+}
+
+.view-button:hover {
+  background: #eff6ff;
+}
+
+@media (max-width: 1000px) {
+
+  .orders-container {
+    padding: 25px;
+  }
+
+  .table-header,
+  .order-row {
+    grid-template-columns: 1fr 1.5fr 1fr 1.2fr;
+  }
+
+  .table-header span:nth-child(3),
+  .table-header span:nth-child(5),
+  .order-row > span:nth-child(3),
+  .order-row > strong:nth-child(5) {
+    display: none;
+  }
+
+}

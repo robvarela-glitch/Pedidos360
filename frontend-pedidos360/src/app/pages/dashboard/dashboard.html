@@ -1,0 +1,156 @@
+<div class="dashboard-container">
+
+  <aside class="sidebar">
+
+    <div class="brand">
+      <h1>Pedidos<span>360</span></h1>
+      <p>Gestión empresarial</p>
+    </div>
+
+    <nav class="menu">
+
+      <a routerLink="/dashboard" class="menu-item active">
+        📊
+        <span>Dashboard</span>
+      </a>
+
+      <a routerLink="/orders" class="menu-item">
+        📦
+        <span>Pedidos</span>
+      </a>
+
+      <a routerLink="/catalog" class="menu-item">
+        🛍️
+        <span>Catálogo</span>
+      </a>
+
+    </nav>
+
+    <div class="sidebar-footer">
+      <button>🚪 Cerrar sesión</button>
+    </div>
+
+  </aside>
+
+
+  <main class="main-content">
+
+    <header class="topbar">
+
+      <div>
+        <h2>Dashboard</h2>
+        <p>Resumen general de Pedidos360</p>
+      </div>
+
+      <div class="user-info">
+        <div class="user-avatar">R</div>
+
+        <div>
+          <strong>Usuario</strong>
+          <small>Administrador</small>
+        </div>
+      </div>
+
+    </header>
+
+
+    <section class="welcome">
+
+      <h2>Bienvenido a Pedidos360 👋</h2>
+
+      <p>
+        Gestiona pedidos, productos y el despacho de tu empresa
+        desde un solo lugar.
+      </p>
+
+    </section>
+
+
+    <section class="stats">
+
+      <div class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div>
+          <span>Pedidos</span>
+          <strong>24</strong>
+          <small>Pedidos registrados</small>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">🛍️</div>
+        <div>
+          <span>Productos</span>
+          <strong>86</strong>
+          <small>Productos disponibles</small>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">🚚</div>
+        <div>
+          <span>Despachos</span>
+          <strong>18</strong>
+          <small>En proceso</small>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div>
+          <span>Entregados</span>
+          <strong>32</strong>
+          <small>Pedidos completados</small>
+        </div>
+      </div>
+
+    </section>
+
+
+    <section class="recent-orders">
+
+      <div class="section-header">
+        <h3>Pedidos recientes</h3>
+
+        <a routerLink="/orders">
+          Ver todos
+        </a>
+      </div>
+
+      <div class="orders-table">
+
+        <div class="table-header">
+          <span>ID</span>
+          <span>Cliente</span>
+          <span>Estado</span>
+          <span>Total</span>
+        </div>
+
+        <div class="table-row">
+          <span>#PED-001</span>
+          <span>Empresa ABC</span>
+          <span class="status accepted">Aceptado</span>
+          <span>$125.000</span>
+        </div>
+
+        <div class="table-row">
+          <span>#PED-002</span>
+          <span>Comercial XYZ</span>
+          <span class="status preparation">En preparación</span>
+          <span>$89.500</span>
+        </div>
+
+        <div class="table-row">
+          <span>#PED-003</span>
+          <span>Distribuidora Sur</span>
+          <span class="status delivered">Entregado</span>
+          <span>$210.000</span>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+</div>

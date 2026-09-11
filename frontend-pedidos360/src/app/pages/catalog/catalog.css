@@ -1,0 +1,169 @@
+.catalog-container {
+  min-height: 100vh;
+  padding: 35px 40px;
+  background: #f4f6f9;
+  font-family: Arial, sans-serif;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.page-header h2 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.page-header p {
+  margin-top: 6px;
+  color: #6b7280;
+}
+
+.add-button {
+  padding: 12px 18px;
+  border: none;
+  border-radius: 8px;
+  background: #2563eb;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.add-button:hover {
+  background: #1d4ed8;
+}
+
+.filters {
+  display: flex;
+  gap: 15px;
+  margin: 30px 0 20px;
+}
+
+.filters input,
+.filters select {
+  padding: 12px 15px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: white;
+  font-size: 14px;
+}
+
+.filters input {
+  flex: 1;
+}
+
+.catalog-card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
+}
+
+.table-header,
+.product-row {
+  display: grid;
+  grid-template-columns: 2.2fr 1.3fr 1.2fr 1.2fr 1.5fr;
+  align-items: center;
+  gap: 15px;
+  padding: 18px 22px;
+}
+
+.table-header {
+  color: #6b7280;
+  font-size: 13px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.product-row {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.product-row:last-child {
+  border-bottom: none;
+}
+
+.product-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.product-icon {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3f4f6;
+  border-radius: 8px;
+  font-size: 22px;
+}
+
+.product-info strong,
+.product-info small {
+  display: block;
+}
+
+.product-info small {
+  margin-top: 4px;
+  color: #9ca3af;
+  font-size: 12px;
+}
+
+.stock {
+  width: fit-content;
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+.available {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.low {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.actions button {
+  padding: 7px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+}
+
+.actions button:hover {
+  background: #f3f4f6;
+}
+
+.actions .delete {
+  color: #dc2626;
+}
+
+@media (max-width: 1000px) {
+  .catalog-container {
+    padding: 25px;
+  }
+
+  .table-header,
+  .product-row {
+    grid-template-columns: 2fr 1fr 1fr;
+  }
+
+  .table-header span:nth-child(4),
+  .table-header span:nth-child(5),
+  .product-row > strong,
+  .product-row .actions {
+    display: none;
+  }
+}
