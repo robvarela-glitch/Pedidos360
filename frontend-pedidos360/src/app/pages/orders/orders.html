@@ -41,105 +41,38 @@
       <span>Acciones</span>
     </div>
 
-    <div class="order-row">
+    @for (order of orders; track order.id) {
 
-      <strong>#PED-001</strong>
+      <div class="order-row">
 
-      <span>Empresa ABC</span>
+        <strong>#PED-{{ order.id.toString().padStart(3, '0') }}</strong>
 
-      <span>11/09/2026</span>
+        <span>{{ order.customer }}</span>
 
-      <span class="status accepted">
-        Aceptado
-      </span>
+        <span>{{ order.date }}</span>
 
-      <strong>$125.000</strong>
+        <span
+          class="status"
+          [class.accepted]="order.status === 'ACEPTADO'"
+          [class.preparation]="order.status === 'EN_PREPARACIÓN'"
+          [class.dispatched]="order.status === 'DESPACHADO'"
+          [class.delivered]="order.status === 'ENTREGADO'"
+          [class.cancelled]="order.status === 'CANCELADO'"
+        >
+          {{ order.status }}
+        </span>
 
-      <button class="view-button">
-        Ver
-      </button>
+        <strong>
+          ${{ order.total.toLocaleString('es-CL') }}
+        </strong>
 
-    </div>
+        <button class="view-button">
+          Ver
+        </button>
 
-    <div class="order-row">
+      </div>
 
-      <strong>#PED-002</strong>
-
-      <span>Comercial XYZ</span>
-
-      <span>11/09/2026</span>
-
-      <span class="status preparation">
-        En preparación
-      </span>
-
-      <strong>$89.500</strong>
-
-      <button class="view-button">
-        Ver
-      </button>
-
-    </div>
-
-    <div class="order-row">
-
-      <strong>#PED-003</strong>
-
-      <span>Distribuidora Sur</span>
-
-      <span>10/09/2026</span>
-
-      <span class="status dispatched">
-        Despachado
-      </span>
-
-      <strong>$210.000</strong>
-
-      <button class="view-button">
-        Ver
-      </button>
-
-    </div>
-
-    <div class="order-row">
-
-      <strong>#PED-004</strong>
-
-      <span>Comercial Norte</span>
-
-      <span>09/09/2026</span>
-
-      <span class="status delivered">
-        Entregado
-      </span>
-
-      <strong>$74.990</strong>
-
-      <button class="view-button">
-        Ver
-      </button>
-
-    </div>
-
-    <div class="order-row">
-
-      <strong>#PED-005</strong>
-
-      <span>Empresa Central</span>
-
-      <span>09/09/2026</span>
-
-      <span class="status cancelled">
-        Cancelado
-      </span>
-
-      <strong>$45.000</strong>
-
-      <button class="view-button">
-        Ver
-      </button>
-
-    </div>
+    }
 
   </div>
 
