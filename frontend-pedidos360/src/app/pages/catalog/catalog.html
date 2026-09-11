@@ -29,6 +29,8 @@
           id="search"
           type="text"
           placeholder="Buscar por nombre o SKU..."
+          [value]="searchText"
+          (input)="onSearch($event)"
         >
 
       </div>
@@ -39,7 +41,11 @@
           Categoría
         </label>
 
-        <select id="category">
+        <select
+          id="category"
+          [value]="selectedCategory"
+          (change)="onCategoryChange($event)"
+        >
 
           <option value="">
             Todas
@@ -83,7 +89,7 @@
 
         <tbody>
 
-          @for (product of products; track product.id) {
+          @for (product of filteredProducts; track product.id) {
 
             <tr>
 
@@ -92,7 +98,9 @@
               </td>
 
               <td>
+
                 <div class="product-name">
+
                   <div class="product-icon">
                     📦
                   </div>
@@ -100,7 +108,9 @@
                   <span>
                     {{ product.name }}
                   </span>
+
                 </div>
+
               </td>
 
               <td>
@@ -108,9 +118,11 @@
               </td>
 
               <td>
+
                 <span class="category">
                   {{ product.category }}
                 </span>
+
               </td>
 
               <td>
@@ -151,12 +163,12 @@
 
           }
 
-          @if (products.length === 0) {
+          @if (filteredProducts.length === 0) {
 
             <tr>
 
               <td colspan="7" class="empty-state">
-                No hay productos registrados.
+                No se encontraron productos.
               </td>
 
             </tr>

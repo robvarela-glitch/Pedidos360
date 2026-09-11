@@ -29,6 +29,8 @@
           id="search"
           type="text"
           placeholder="Buscar por cliente o ID..."
+          [value]="searchText"
+          (input)="onSearch($event)"
         >
 
       </div>
@@ -39,7 +41,11 @@
           Estado
         </label>
 
-        <select id="status">
+        <select
+          id="status"
+          [value]="selectedStatus"
+          (change)="onStatusChange($event)"
+        >
 
           <option value="">
             Todos
@@ -94,7 +100,7 @@
 
         <tbody>
 
-          @for (order of orders; track order.id) {
+          @for (order of filteredOrders; track order.id) {
 
             <tr>
 
@@ -147,12 +153,12 @@
 
           }
 
-          @if (orders.length === 0) {
+          @if (filteredOrders.length === 0) {
 
             <tr>
 
               <td colspan="6" class="empty-state">
-                No hay pedidos registrados.
+                No se encontraron pedidos.
               </td>
 
             </tr>
