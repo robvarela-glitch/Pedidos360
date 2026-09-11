@@ -10,6 +10,8 @@ import { Audit } from './pages/audit/audit';
 import { ProductDetail } from './pages/product-detail/product-detail';
 import { EditProduct } from './pages/edit-product/edit-product';
 import { NewProduct } from './pages/new-product/new-product';
+
+import { NewOrder } from './pages/new-order/new-order';
 import { OrderDetail } from './pages/order-detail/order-detail';
 
 import { authGuard } from './core/guards/auth-guard';
@@ -60,6 +62,12 @@ export const routes: Routes = [
   {
     path: 'orders',
     component: Orders,
+    canActivate: [authGuard]
+  },
+
+  {
+    path: 'orders/new',
+    component: NewOrder,
     canActivate: [authGuard]
   },
 
