@@ -1,49 +1,230 @@
 <aside class="sidebar">
 
-  <div class="logo">
-    <h1>Pedidos<span>360</span></h1>
-    <p>Gestión de pedidos</p>
+  <!-- LOGO -->
+  <div class="sidebar-brand">
+
+    <div class="brand-mark">
+      <span class="brand-box"></span>
+      <span class="brand-box small"></span>
+    </div>
+
+    <div class="brand-text">
+
+      <h1>
+        Pedidos<span>360</span>
+      </h1>
+
+      <p>
+        Cloud Native Platform
+      </p>
+
+    </div>
+
   </div>
 
-  <nav class="menu">
 
-    <a
-      routerLink="/dashboard"
-      routerLinkActive="active"
-      [routerLinkActiveOptions]="{ exact: true }">
-      <span class="icon">🏠</span>
-      <span>Dashboard</span>
-    </a>
+  <!-- NAVEGACIÓN -->
+  <nav class="sidebar-nav">
 
-    <a
-      routerLink="/orders"
-      routerLinkActive="active">
-      <span class="icon">📦</span>
-      <span>Pedidos</span>
-    </a>
+    <div class="nav-section">
 
-    <a
-      routerLink="/catalog"
-      routerLinkActive="active">
-      <span class="icon">🛒</span>
-      <span>Catálogo</span>
-    </a>
+      <span class="nav-section-title">
+        PRINCIPAL
+      </span>
 
-    <a href="#" class="disabled-link">
-      <span class="icon">📊</span>
-      <span>Reportes</span>
-    </a>
 
-    <a href="#" class="disabled-link">
-      <span class="icon">📝</span>
-      <span>Auditoría</span>
-    </a>
+      <a
+        routerLink="/dashboard"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="nav-item">
+
+        <span class="nav-icon">
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true">
+
+            <path
+              d="M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z">
+            </path>
+
+          </svg>
+        </span>
+
+        <span class="nav-label">
+          Dashboard
+        </span>
+
+      </a>
+
+
+      <a
+        routerLink="/orders"
+        routerLinkActive="active"
+        class="nav-item">
+
+        <span class="nav-icon">
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true">
+
+            <path
+              d="M5 5h14v14H5z">
+            </path>
+
+            <path
+              d="M8 9h8M8 12h8M8 15h5">
+            </path>
+
+          </svg>
+        </span>
+
+        <span class="nav-label">
+          Pedidos
+        </span>
+
+      </a>
+
+
+      <a
+        routerLink="/catalog"
+        routerLinkActive="active"
+        class="nav-item">
+
+        <span class="nav-icon">
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true">
+
+            <path
+              d="M4 7h16l-1 13H5z">
+            </path>
+
+            <path
+              d="M8 7a4 4 0 0 1 8 0">
+            </path>
+
+          </svg>
+        </span>
+
+        <span class="nav-label">
+          Catálogo
+        </span>
+
+      </a>
+
+    </div>
+
+
+    <div class="nav-section">
+
+      <span class="nav-section-title">
+        ANÁLISIS
+      </span>
+
+
+      <a
+        routerLink="/reports"
+        routerLinkActive="active"
+        class="nav-item">
+
+        <span class="nav-icon">
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true">
+
+            <path
+              d="M4 19V5">
+            </path>
+
+            <path
+              d="M4 19h16">
+            </path>
+
+            <path
+              d="m7 15 4-4 3 2 5-6">
+            </path>
+
+          </svg>
+        </span>
+
+        <span class="nav-label">
+          Reportes
+        </span>
+
+      </a>
+
+
+      <a
+        routerLink="/audit"
+        routerLinkActive="active"
+        class="nav-item">
+
+        <span class="nav-icon">
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true">
+
+            <path
+              d="M6 3h9l4 4v14H6z">
+            </path>
+
+            <path
+              d="M14 3v5h5">
+            </path>
+
+            <path
+              d="M9 12h6M9 15h6M9 18h4">
+            </path>
+
+          </svg>
+        </span>
+
+        <span class="nav-label">
+          Auditoría
+        </span>
+
+      </a>
+
+    </div>
 
   </nav>
 
+
+  <!-- FOOTER -->
   <div class="sidebar-footer">
-    <p>Pedidos360</p>
-    <small>Cloud Native Platform</small>
+
+    <div class="system-status">
+
+      <span class="status-indicator"></span>
+
+      <div>
+
+        <strong>
+          Sistema operativo
+        </strong>
+
+        <small>
+          Todos los servicios activos
+        </small>
+
+      </div>
+
+    </div>
+
+
+    <div class="footer-brand">
+
+      <strong>
+        Pedidos360
+      </strong>
+
+      <span>
+        Gestión empresarial
+      </span>
+
+    </div>
+
   </div>
 
 </aside>

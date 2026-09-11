@@ -1,160 +1,698 @@
 <app-sidebar></app-sidebar>
 
-<main class="dashboard-content">
+<main class="dashboard-page">
 
-  <header class="dashboard-header">
+  <div class="dashboard-container">
 
-    <div>
-      <h1>Dashboard</h1>
-      <p>Resumen general de Pedidos360</p>
-    </div>
+    <!-- HEADER -->
+    <header class="dashboard-header">
 
-  </header>
+      <div class="header-info">
 
-  <section class="welcome-section">
+        <span class="eyebrow">
+          RESUMEN GENERAL
+        </span>
 
-    <h2>Bienvenido a Pedidos360 👋</h2>
+        <h1>
+          Dashboard
+        </h1>
 
-    <p>
-      Gestiona tus pedidos, productos y operaciones
-      desde una sola plataforma.
-    </p>
+        <p>
+          Visualiza el estado general de tus pedidos y operaciones.
+        </p>
 
-  </section>
-
-  <section class="stats-grid">
-
-    <div class="stat-card">
-      <div class="stat-icon">📦</div>
-
-      <div>
-        <span>Pedidos totales</span>
-        <strong>128</strong>
-      </div>
-    </div>
-
-    <div class="stat-card">
-      <div class="stat-icon">⏳</div>
-
-      <div>
-        <span>Pedidos pendientes</span>
-        <strong>24</strong>
-      </div>
-    </div>
-
-    <div class="stat-card">
-      <div class="stat-icon">🚚</div>
-
-      <div>
-        <span>En despacho</span>
-        <strong>18</strong>
-      </div>
-    </div>
-
-    <div class="stat-card">
-      <div class="stat-icon">💰</div>
-
-      <div>
-        <span>Ventas del mes</span>
-        <strong>$4.850.000</strong>
-      </div>
-    </div>
-
-  </section>
-
-  <section class="recent-orders">
-
-    <div class="section-header">
-
-      <div>
-        <h2>Pedidos recientes</h2>
-        <p>Últimos pedidos registrados en el sistema</p>
       </div>
 
-      <a routerLink="/orders" class="view-all">
-        Ver todos →
-      </a>
 
-    </div>
+      <div class="header-date">
 
-    <div class="table-container">
+        <span class="date-icon">
+          ◷
+        </span>
 
-      <table>
+        <div>
 
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Cliente</th>
-            <th>Fecha</th>
-            <th>Estado</th>
-            <th>Total</th>
-          </tr>
-        </thead>
+          <strong>
+            11 septiembre 2026
+          </strong>
 
-        <tbody>
+          <small>
+            Información del sistema
+          </small>
 
-          <tr>
-            <td>#001</td>
-            <td>Empresa ABC</td>
-            <td>11/09/2026</td>
+        </div>
 
-            <td>
-              <span class="status accepted">
-                Aceptado
-              </span>
-            </td>
+      </div>
 
-            <td>$125.000</td>
-          </tr>
+    </header>
 
-          <tr>
-            <td>#002</td>
-            <td>Comercial XYZ</td>
-            <td>11/09/2026</td>
 
-            <td>
-              <span class="status preparing">
-                En preparación
-              </span>
-            </td>
+    <!-- KPI CARDS -->
+    <section class="kpi-grid">
 
-            <td>$89.500</td>
-          </tr>
 
-          <tr>
-            <td>#003</td>
-            <td>Distribuidora Sur</td>
-            <td>10/09/2026</td>
+      <!-- TOTAL PEDIDOS -->
+      <article class="kpi-card">
 
-            <td>
-              <span class="status dispatched">
-                Despachado
-              </span>
-            </td>
+        <div class="kpi-top">
 
-            <td>$210.000</td>
-          </tr>
+          <div class="kpi-icon blue">
+            ▣
+          </div>
 
-          <tr>
-            <td>#004</td>
-            <td>Comercial Norte</td>
-            <td>09/09/2026</td>
+          <span class="kpi-trend positive">
+            +12,4%
+          </span>
 
-            <td>
-              <span class="status delivered">
-                Entregado
-              </span>
-            </td>
+        </div>
 
-            <td>$74.990</td>
-          </tr>
+        <span class="kpi-label">
+          Total de pedidos
+        </span>
 
-        </tbody>
+        <strong class="kpi-value">
+          {{ totalOrders }}
+        </strong>
 
-      </table>
+        <small class="kpi-description">
+          pedidos registrados
+        </small>
 
-    </div>
+      </article>
 
-  </section>
+
+      <!-- PENDIENTES -->
+      <article class="kpi-card">
+
+        <div class="kpi-top">
+
+          <div class="kpi-icon orange">
+            ◷
+          </div>
+
+          <span class="kpi-trend warning">
+            Atención
+          </span>
+
+        </div>
+
+        <span class="kpi-label">
+          Pedidos pendientes
+        </span>
+
+        <strong class="kpi-value">
+          {{ pendingOrders }}
+        </strong>
+
+        <small class="kpi-description">
+          requieren seguimiento
+        </small>
+
+      </article>
+
+
+      <!-- DESPACHADOS -->
+      <article class="kpi-card">
+
+        <div class="kpi-top">
+
+          <div class="kpi-icon purple">
+            ↗
+          </div>
+
+          <span class="kpi-trend positive">
+            +8,2%
+          </span>
+
+        </div>
+
+        <span class="kpi-label">
+          Pedidos despachados
+        </span>
+
+        <strong class="kpi-value">
+          {{ dispatchedOrders }}
+        </strong>
+
+        <small class="kpi-description">
+          enviados al cliente
+        </small>
+
+      </article>
+
+
+      <!-- VENTAS -->
+      <article class="kpi-card">
+
+        <div class="kpi-top">
+
+          <div class="kpi-icon green">
+            $
+          </div>
+
+          <span class="kpi-trend positive">
+            +15,7%
+          </span>
+
+        </div>
+
+        <span class="kpi-label">
+          Ventas acumuladas
+        </span>
+
+        <strong class="kpi-value sales">
+          {{ formatPrice(totalSales) }}
+        </strong>
+
+        <small class="kpi-description">
+          volumen de ventas
+        </small>
+
+      </article>
+
+    </section>
+
+
+    <!-- MAIN GRID -->
+    <section class="dashboard-main-grid">
+
+
+      <!-- SALES CHART -->
+      <article class="dashboard-card sales-card">
+
+        <div class="card-header">
+
+          <div>
+
+            <span class="card-eyebrow">
+              RENDIMIENTO
+            </span>
+
+            <h2>
+              Evolución de ventas
+            </h2>
+
+            <p>
+              Comportamiento de las ventas durante los últimos meses.
+            </p>
+
+          </div>
+
+
+          <div class="card-value">
+
+            <strong>
+              {{ formatPrice(totalSales) }}
+            </strong>
+
+            <span>
+              acumulado
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <div class="sales-chart">
+
+          <div class="chart-y-axis">
+
+            <span>
+              $5M
+            </span>
+
+            <span>
+              $4M
+            </span>
+
+            <span>
+              $3M
+            </span>
+
+            <span>
+              $2M
+            </span>
+
+            <span>
+              $0
+            </span>
+
+          </div>
+
+
+          <div class="chart-area">
+
+            <div class="chart-grid-lines">
+
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+
+            </div>
+
+
+            <div class="bars">
+
+              @for (
+                item of salesData;
+                track item.month
+              ) {
+
+                <div class="bar-column">
+
+                  <div
+                    class="bar-value"
+                    [style.height.%]="getBarHeight(item.value)">
+
+                    <span>
+                      {{ formatPrice(item.value) }}
+                    </span>
+
+                  </div>
+
+                  <small>
+                    {{ item.month }}
+                  </small>
+
+                </div>
+
+              }
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </article>
+
+
+      <!-- ORDER STATUS -->
+      <article class="dashboard-card status-card">
+
+        <div class="card-header">
+
+          <div>
+
+            <span class="card-eyebrow">
+              OPERACIONES
+            </span>
+
+            <h2>
+              Estado de pedidos
+            </h2>
+
+            <p>
+              Distribución actual.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="status-content">
+
+          <div class="status-total">
+
+            <strong>
+              {{ totalOrders }}
+            </strong>
+
+            <span>
+              pedidos
+            </span>
+
+          </div>
+
+
+          <div class="status-list">
+
+            @for (
+              item of orderStatusData;
+              track item.label
+            ) {
+
+              <div class="status-row">
+
+                <div class="status-info">
+
+                  <span
+                    class="status-dot"
+                    [class.delivered]="item.label === 'Entregados'"
+                    [class.preparing]="item.label === 'En preparación'"
+                    [class.accepted]="item.label === 'Aceptados'"
+                    [class.dispatched]="item.label === 'Despachados'"
+                    [class.created]="item.label === 'Creados'"
+                    [class.cancelled]="item.label === 'Cancelados'">
+                  </span>
+
+                  <span>
+                    {{ item.label }}
+                  </span>
+
+                </div>
+
+                <strong>
+                  {{ item.value }}
+                </strong>
+
+              </div>
+
+              <div class="status-progress">
+
+                <div
+                  class="status-progress-value"
+                  [style.width.%]="item.percentage">
+                </div>
+
+              </div>
+
+            }
+
+          </div>
+
+        </div>
+
+      </article>
+
+    </section>
+
+
+    <!-- LOWER GRID -->
+    <section class="dashboard-lower-grid">
+
+
+      <!-- RECENT ORDERS -->
+      <article class="dashboard-card orders-card">
+
+        <div class="card-header">
+
+          <div>
+
+            <span class="card-eyebrow">
+              ACTIVIDAD
+            </span>
+
+            <h2>
+              Pedidos recientes
+            </h2>
+
+            <p>
+              Últimos pedidos registrados en la plataforma.
+            </p>
+
+          </div>
+
+
+          <a
+            routerLink="/orders"
+            class="view-all">
+
+            Ver todos
+            <span>
+              →
+            </span>
+
+          </a>
+
+        </div>
+
+
+        <div class="orders-table-wrapper">
+
+          <table class="orders-table">
+
+            <thead>
+
+              <tr>
+
+                <th>
+                  Pedido
+                </th>
+
+                <th>
+                  Cliente
+                </th>
+
+                <th>
+                  Fecha
+                </th>
+
+                <th>
+                  Estado
+                </th>
+
+                <th>
+                  Total
+                </th>
+
+              </tr>
+
+            </thead>
+
+
+            <tbody>
+
+              @for (
+                order of recentOrders;
+                track order.id
+              ) {
+
+                <tr>
+
+                  <td>
+
+                    <strong class="order-id">
+                      {{ order.id }}
+                    </strong>
+
+                  </td>
+
+                  <td>
+                    {{ order.customer }}
+                  </td>
+
+                  <td class="muted">
+                    {{ order.date }}
+                  </td>
+
+                  <td>
+
+                    <span
+                      class="order-status"
+                      [class]="getStatusClass(order.status)">
+
+                      {{ order.status }}
+
+                    </span>
+
+                  </td>
+
+                  <td>
+
+                    <strong>
+                      {{ formatPrice(order.total) }}
+                    </strong>
+
+                  </td>
+
+                </tr>
+
+              }
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </article>
+
+
+      <!-- TOP PRODUCTS -->
+      <article class="dashboard-card products-card">
+
+        <div class="card-header">
+
+          <div>
+
+            <span class="card-eyebrow">
+              CATÁLOGO
+            </span>
+
+            <h2>
+              Productos destacados
+            </h2>
+
+            <p>
+              Productos con mayor movimiento.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="top-products-list">
+
+          @for (
+            product of topProducts;
+            track product.name;
+            let i = $index
+          ) {
+
+            <div class="top-product">
+
+              <div class="product-rank">
+                {{ i + 1 }}
+              </div>
+
+
+              <div class="product-info">
+
+                <strong>
+                  {{ product.name }}
+                </strong>
+
+                <span>
+                  {{ product.category }}
+                </span>
+
+              </div>
+
+
+              <div class="product-sales">
+
+                <strong>
+                  {{ product.sold }}
+                </strong>
+
+                <span>
+                  ventas
+                </span>
+
+              </div>
+
+            </div>
+
+          }
+
+        </div>
+
+      </article>
+
+    </section>
+
+
+    <!-- QUICK INDICATORS -->
+    <section class="quick-grid">
+
+
+      <div class="quick-card">
+
+        <div class="quick-icon green">
+          ✓
+        </div>
+
+        <div>
+
+          <span>
+            Productos con stock
+          </span>
+
+          <strong>
+            {{ stockProducts }}
+          </strong>
+
+        </div>
+
+        <small>
+          disponibles
+        </small>
+
+      </div>
+
+
+      <div class="quick-card">
+
+        <div class="quick-icon red">
+          !
+        </div>
+
+        <div>
+
+          <span>
+            Pedidos cancelados
+          </span>
+
+          <strong>
+            {{ cancelledOrders }}
+          </strong>
+
+        </div>
+
+        <small>
+          requieren revisión
+        </small>
+
+      </div>
+
+
+      <div class="quick-card">
+
+        <div class="quick-icon blue">
+          ↗
+        </div>
+
+        <div>
+
+          <span>
+            Tasa de despacho
+          </span>
+
+          <strong>
+            82%
+          </strong>
+
+        </div>
+
+        <small>
+          rendimiento actual
+        </small>
+
+      </div>
+
+
+      <div class="quick-card">
+
+        <div class="quick-icon purple">
+          ◉
+        </div>
+
+        <div>
+
+          <span>
+            Plataforma
+          </span>
+
+          <strong>
+            Activa
+          </strong>
+
+        </div>
+
+        <small>
+          todos los servicios
+        </small>
+
+      </div>
+
+    </section>
+
+  </div>
 
 </main>

@@ -1,0 +1,424 @@
+<app-sidebar></app-sidebar>
+
+<main class="new-order-page">
+
+  <div class="new-order-container">
+
+    <!-- HEADER -->
+
+    <header class="page-header">
+
+      <div class="page-header-info">
+
+        <div class="breadcrumb">
+
+          <a routerLink="/orders">
+            Pedidos
+          </a>
+
+          <span>
+            /
+          </span>
+
+          <strong>
+            Nuevo pedido
+          </strong>
+
+        </div>
+
+        <span class="eyebrow">
+          GESTIÓN DE PEDIDOS
+        </span>
+
+        <h1>
+          Nuevo pedido
+        </h1>
+
+        <p>
+          Registra un nuevo pedido y agrega los productos solicitados.
+        </p>
+
+      </div>
+
+
+      <a
+        routerLink="/orders"
+        class="back-button">
+
+        <span>
+          ←
+        </span>
+
+        Volver a pedidos
+
+      </a>
+
+    </header>
+
+
+    <!-- FORMULARIO -->
+
+    <form
+      #orderForm="ngForm"
+      (ngSubmit)="createOrder(orderForm)"
+      class="order-form">
+
+
+      <!-- DATOS DEL CLIENTE -->
+
+      <section class="form-card">
+
+        <div class="card-header">
+
+          <div>
+
+            <span class="card-eyebrow">
+              INFORMACIÓN DEL PEDIDO
+            </span>
+
+            <h2>
+              Datos del cliente
+            </h2>
+
+            <p>
+              Ingresa la información básica del pedido.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="form-content">
+
+          <div class="field">
+
+            <label for="customer">
+              Cliente
+              <span>*</span>
+            </label>
+
+            <input
+              id="customer"
+              name="customer"
+              type="text"
+              placeholder="Ej. Empresa ABC"
+              [(ngModel)]="order.customer"
+              required
+              minlength="3"
+              #customer="ngModel"
+            />
+
+            @if (
+              customer.invalid &&
+              customer.touched
+            ) {
+
+              <small class="field-error">
+                Ingresa el nombre del cliente.
+              </small>
+
+            }
+
+          </div>
+
+
+          <div class="field">
+
+            <label>
+              Estado inicial
+            </label>
+
+            <div class="status-preview">
+
+              <span class="status-dot">
+              </span>
+
+              Creado
+
+            </div>
+
+            <small class="field-help">
+              Todo nuevo pedido comienza en estado Creado.
+            </small>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- PRODUCTOS -->
+
+      <section class="form-card">
+
+        <div class="card-header">
+
+          <div>
+
+            <span class="card-eyebrow">
+              DETALLE
+            </span>
+
+            <h2>
+              Productos del pedido
+            </h2>
+
+            <p>
+              Selecciona un producto e indica la cantidad solicitada.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="product-selector">
+
+
+          <div class="field product-field">
+
+            <label for="product">
+              Producto
+            </label>
+
+            <select
+              id="product"
+              name="product"
+              [(ngModel)]="selectedProduct">
+
+              <option value="">
+                Seleccionar producto...
+              </option>
+
+              @for (
+                product of products;
+                track product.name
+              ) {
+
+                <option
+                  [value]="product.name">
+
+                  {{ product.name }}
+                  ·
+                  {{ formatPrice(product.price) }}
+
+                </option>
+
+              }
+
+            </select>
+
+          </div>
+
+
+          <div class="field quantity-field">
+
+            <label for="quantity">
+              Cantidad
+            </label>
+
+            <input
+              id="quantity"
+              name="quantity"
+              type="number"
+              min="1"
+              max="99"
+              [(ngModel)]="quantity"
+            />
+
+          </div>
+
+
+          <button
+            type="button"
+            class="add-product-button"
+            (click)="addProduct()"
+            [disabled]="!selectedProduct">
+
+            <span>
+              +
+            </span>
+
+            Agregar
+
+          </button>
+
+        </div>
+
+
+        <!-- PRODUCTOS AGREGADOS -->
+
+        <div class="selected-products">
+
+          <div class="selected-products-header">
+
+            <span>
+              RESUMEN DEL PEDIDO
+            </span>
+
+          </div>
+
+
+          @if (order.total > 0) {
+
+            <div class="product-added-row">
+
+              <div class="added-product-icon">
+                ✓
+              </div>
+
+              <div class="added-product-info">
+
+                <strong>
+                  Productos seleccionados
+                </strong>
+
+                <small>
+                  El total se ha calculado automáticamente.
+                </small>
+
+              </div>
+
+              <strong class="added-total">
+                {{ formatPrice(order.total) }}
+              </strong>
+
+            </div>
+
+          } @else {
+
+            <div class="no-products">
+
+              <div class="no-products-icon">
+                +
+              </div>
+
+              <div>
+
+                <strong>
+                  No hay productos agregados
+                </strong>
+
+                <small>
+                  Selecciona un producto para comenzar.
+                </small>
+
+              </div>
+
+            </div>
+
+          }
+
+        </div>
+
+      </section>
+
+
+      <!-- TOTAL -->
+
+      <section class="total-card">
+
+        <div>
+
+          <span>
+            TOTAL DEL PEDIDO
+          </span>
+
+          <small>
+            Monto calculado según los productos seleccionados.
+          </small>
+
+        </div>
+
+
+        <strong>
+          {{ formatPrice(order.total) }}
+        </strong>
+
+      </section>
+
+
+      <!-- ACCIONES -->
+
+      <div class="form-actions">
+
+        <button
+          type="button"
+          class="cancel-button"
+          (click)="cancel()">
+
+          Cancelar
+
+        </button>
+
+
+        <button
+          type="submit"
+          class="save-button"
+          [disabled]="saving || orderForm.invalid || order.total <= 0">
+
+          @if (saving) {
+
+            <span class="button-spinner">
+            </span>
+
+            Creando...
+
+          } @else {
+
+            <span>
+              ✓
+            </span>
+
+            Crear pedido
+
+          }
+
+        </button>
+
+      </div>
+
+
+      <!-- SUCCESS -->
+
+      @if (saved) {
+
+        <div class="success-message">
+
+          <span>
+            ✓
+          </span>
+
+          Pedido creado correctamente. Redirigiendo a pedidos...
+
+        </div>
+
+      }
+
+    </form>
+
+
+    <!-- FOOTER -->
+
+    <div class="page-footer">
+
+      <div class="footer-status">
+
+        <span class="online-dot">
+        </span>
+
+        Sistema operativo
+
+      </div>
+
+      <span>
+        Pedidos360 · Gestión empresarial
+      </span>
+
+    </div>
+
+  </div>
+
+</main>

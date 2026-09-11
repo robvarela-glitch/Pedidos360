@@ -1,0 +1,550 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Arial,
+    sans-serif;
+}
+
+
+/* =========================
+   PÁGINA
+========================= */
+
+.new-product-page {
+  min-height: 100vh;
+  margin-left: 240px;
+  padding: 28px 34px 50px;
+  box-sizing: border-box;
+  background: #f5f8fc;
+}
+
+
+.new-product-container {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+
+/* =========================
+   BREADCRUMB
+========================= */
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 16px;
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+
+.breadcrumb a {
+  color: #64748b;
+  text-decoration: none;
+}
+
+
+.breadcrumb a:hover {
+  color: #2563eb;
+}
+
+
+.breadcrumb strong {
+  color: #475569;
+  font-weight: 500;
+}
+
+
+/* =========================
+   HEADER
+========================= */
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 30px;
+  margin-bottom: 28px;
+}
+
+
+.eyebrow {
+  display: block;
+  margin-bottom: 8px;
+  color: #2563eb;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.7px;
+}
+
+
+.page-header h1 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 32px;
+  line-height: 1.1;
+  font-weight: 750;
+  letter-spacing: -0.7px;
+}
+
+
+.page-header p {
+  margin: 9px 0 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+
+.back-button {
+  display: flex;
+  align-items: center;
+  height: 42px;
+  padding: 0 15px;
+  box-sizing: border-box;
+  border: 1px solid #dce4ee;
+  border-radius: 8px;
+  background: white;
+  color: #475569;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+
+.back-button:hover {
+  background: #f8fafc;
+  border-color: #bfdbfe;
+  color: #2563eb;
+}
+
+
+/* =========================
+   FORM CARD
+========================= */
+
+.product-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+
+.form-card {
+  padding: 24px;
+  background: white;
+  border: 1px solid #e3e9f1;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.035);
+}
+
+
+.form-card-header {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #edf1f5;
+}
+
+
+.section-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+
+.section-icon.blue {
+  background: #e5f0ff;
+  color: #2563eb;
+}
+
+
+.section-icon.green {
+  background: #e5f8ec;
+  color: #16a34a;
+}
+
+
+.section-icon.purple {
+  background: #f0e9ff;
+  color: #7c3aed;
+}
+
+
+.section-icon.orange {
+  background: #fff0df;
+  color: #ea580c;
+}
+
+
+.form-card-header h2 {
+  margin: 0;
+  color: #172033;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+
+.form-card-header p {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 12px;
+}
+
+
+/* =========================
+   FORM GRID
+========================= */
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+
+/* =========================
+   FORM FIELDS
+========================= */
+
+.form-field {
+  min-width: 0;
+}
+
+
+.form-field label {
+  display: block;
+  margin-bottom: 7px;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+
+.form-field label span {
+  color: #ef4444;
+}
+
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #d7dee8;
+  border-radius: 8px;
+  background: white;
+  color: #172033;
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+
+.form-field input,
+.form-field select {
+  height: 42px;
+}
+
+
+.form-field input {
+  padding: 0 13px;
+}
+
+
+.form-field select {
+  padding: 0 12px;
+  cursor: pointer;
+}
+
+
+.form-field textarea {
+  min-height: 125px;
+  padding: 12px 13px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+
+.form-field input::placeholder,
+.form-field textarea::placeholder {
+  color: #a1acbb;
+}
+
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+  border-color: #3b82f6;
+  box-shadow:
+    0 0 0 3px rgba(59, 130, 246, 0.10);
+}
+
+
+.field-help {
+  display: block;
+  margin-top: 6px;
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+
+.error {
+  display: block;
+  margin-top: 6px;
+  color: #dc2626;
+  font-size: 11px;
+}
+
+
+/* =========================
+   PRECIO
+========================= */
+
+.money-input {
+  position: relative;
+}
+
+
+.money-input > span {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+
+.money-input input {
+  padding-left: 28px;
+}
+
+
+/* =========================
+   IMAGEN
+========================= */
+
+.image-preview {
+  margin-top: 18px;
+}
+
+
+.image-preview > span {
+  display: block;
+  margin-bottom: 8px;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+
+.preview-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 190px;
+  height: 150px;
+  padding: 12px;
+  box-sizing: border-box;
+  border: 1px solid #e1e7ef;
+  border-radius: 10px;
+  background: #f8fafc;
+  overflow: hidden;
+}
+
+
+.preview-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+
+/* =========================
+   SUCCESS
+========================= */
+
+.success-message {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 15px 18px;
+  box-sizing: border-box;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  background: #f0fdf4;
+}
+
+
+.success-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #dcfce7;
+  color: #16a34a;
+  font-weight: 700;
+}
+
+
+.success-message strong {
+  display: block;
+  color: #166534;
+  font-size: 13px;
+}
+
+
+.success-message p {
+  margin: 3px 0 0;
+  color: #4d7c5a;
+  font-size: 11px;
+}
+
+
+/* =========================
+   ACCIONES
+========================= */
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 5px;
+}
+
+
+.cancel-button,
+.save-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 43px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+
+.cancel-button {
+  padding: 0 18px;
+  border: 1px solid #d7dee8;
+  background: white;
+  color: #475569;
+}
+
+
+.cancel-button:hover {
+  background: #f8fafc;
+}
+
+
+.save-button {
+  gap: 8px;
+  min-width: 155px;
+  padding: 0 20px;
+  border: 0;
+  background: #2563eb;
+  color: white;
+  box-shadow: 0 5px 14px rgba(37, 99, 235, 0.18);
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+
+.save-button:hover:not(:disabled) {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.23);
+}
+
+
+.save-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+
+.save-icon {
+  font-size: 15px;
+}
+
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 900px) {
+
+  .new-product-page {
+    margin-left: 0;
+    padding: 22px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .page-header {
+    flex-direction: column;
+  }
+
+}
+
+
+@media (max-width: 600px) {
+
+  .new-product-page {
+    padding: 18px 14px 35px;
+  }
+
+  .form-card {
+    padding: 18px;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .cancel-button,
+  .save-button {
+    width: 100%;
+  }
+
+}
