@@ -1,91 +1,174 @@
-<div class="catalog-container">
+<app-sidebar></app-sidebar>
 
-  <div class="page-header">
+<main class="catalog-content">
+
+  <header class="page-header">
+
     <div>
-      <h2>Catálogo</h2>
-      <p>Gestiona los productos y el stock de tu empresa</p>
+      <h1>Catálogo</h1>
+      <p>Gestiona los productos y el stock disponible</p>
     </div>
 
-    <button class="add-button">
+    <button class="new-product-button">
       + Nuevo producto
     </button>
-  </div>
 
-  <div class="filters">
+  </header>
 
-    <input
-      type="text"
-      placeholder="🔍 Buscar producto..."
-    >
+  <section class="catalog-card">
 
-    <select>
-      <option>Todos los productos</option>
-      <option>Con stock</option>
-      <option>Stock bajo</option>
-      <option>Sin stock</option>
-    </select>
+    <div class="filters">
 
-  </div>
+      <div class="filter-group">
 
-  <div class="catalog-card">
+        <label for="search">
+          Buscar producto
+        </label>
 
-    <div class="table-header">
-      <span>Producto</span>
-      <span>Categoría</span>
-      <span>Stock</span>
-      <span>Precio</span>
-      <span>Acciones</span>
-    </div>
-
-    @for (product of products; track product.id) {
-
-      <div class="product-row">
-
-        <div class="product-info">
-
-          <div class="product-icon">
-            📦
-          </div>
-
-          <div>
-            <strong>{{ product.name }}</strong>
-            <small>{{ product.sku }}</small>
-          </div>
-
-        </div>
-
-        <span>
-          {{ product.category }}
-        </span>
-
-        <span
-          class="stock"
-          [class.available]="product.stock >= 5"
-          [class.low]="product.stock < 5"
+        <input
+          id="search"
+          type="text"
+          placeholder="Buscar por nombre o SKU..."
         >
-          {{ product.stock }} unidades
-        </span>
-
-        <strong>
-          ${{ product.price.toLocaleString('es-CL') }}
-        </strong>
-
-        <div class="actions">
-
-          <button>
-            Editar
-          </button>
-
-          <button class="delete">
-            Eliminar
-          </button>
-
-        </div>
 
       </div>
 
-    }
+      <div class="filter-group">
 
-  </div>
+        <label for="category">
+          Categoría
+        </label>
 
-</div>
+        <select id="category">
+
+          <option value="">
+            Todas
+          </option>
+
+          <option value="Tecnología">
+            Tecnología
+          </option>
+
+          <option value="Accesorios">
+            Accesorios
+          </option>
+
+          <option value="Telefonía">
+            Telefonía
+          </option>
+
+        </select>
+
+      </div>
+
+    </div>
+
+    <div class="table-container">
+
+      <table>
+
+        <thead>
+
+          <tr>
+            <th>ID</th>
+            <th>Producto</th>
+            <th>SKU</th>
+            <th>Categoría</th>
+            <th>Stock</th>
+            <th>Precio</th>
+            <th>Acciones</th>
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          @for (product of products; track product.id) {
+
+            <tr>
+
+              <td>
+                <strong>#{{ product.id }}</strong>
+              </td>
+
+              <td>
+                <div class="product-name">
+                  <div class="product-icon">
+                    📦
+                  </div>
+
+                  <span>
+                    {{ product.name }}
+                  </span>
+                </div>
+              </td>
+
+              <td>
+                {{ product.sku }}
+              </td>
+
+              <td>
+                <span class="category">
+                  {{ product.category }}
+                </span>
+              </td>
+
+              <td>
+
+                <span
+                  class="stock"
+                  [class.low]="product.stock <= 5"
+                  [class.medium]="product.stock > 5 && product.stock <= 15"
+                  [class.good]="product.stock > 15">
+
+                  {{ product.stock }} unidades
+
+                </span>
+
+              </td>
+
+              <td>
+                ${{ product.price | number:'1.0-0' }}
+              </td>
+
+              <td>
+
+                <button class="action-button">
+                  Ver
+                </button>
+
+                <button class="action-button edit">
+                  Editar
+                </button>
+
+                <button class="action-button delete">
+                  Eliminar
+                </button>
+
+              </td>
+
+            </tr>
+
+          }
+
+          @if (products.length === 0) {
+
+            <tr>
+
+              <td colspan="7" class="empty-state">
+                No hay productos registrados.
+              </td>
+
+            </tr>
+
+          }
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </section>
+
+</main>

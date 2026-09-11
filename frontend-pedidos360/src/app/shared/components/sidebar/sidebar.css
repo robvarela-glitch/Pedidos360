@@ -1,0 +1,91 @@
+.sidebar {
+  width: 240px;
+  height: 100vh;
+  background: #111827;
+  color: white;
+  position: fixed;
+  left: 0;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 16px;
+  box-sizing: border-box;
+  z-index: 1000;
+}
+
+.logo {
+  padding: 0 12px 30px;
+  border-bottom: 1px solid #374151;
+}
+
+.logo h1 {
+  margin: 0;
+  font-size: 25px;
+  font-weight: 700;
+}
+
+.logo h1 span {
+  font-weight: 400;
+}
+
+.logo p {
+  margin: 6px 0 0;
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 25px;
+}
+
+.menu a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 14px;
+  color: #d1d5db;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: 0.2s;
+  font-size: 15px;
+}
+
+.menu a:hover {
+  background: #1f2937;
+  color: white;
+}
+
+.menu a.active {
+  background: #2563eb;
+  color: white;
+}
+
+.icon {
+  width: 22px;
+  text-align: center;
+  font-size: 17px;
+}
+
+.disabled-link {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 15px 12px;
+  border-top: 1px solid #374151;
+  color: #9ca3af;
+}
+
+.sidebar-footer p {
+  margin: 0;
+  font-size: 13px;
+}
+
+.sidebar-footer small {
+  font-size: 11px;
+}

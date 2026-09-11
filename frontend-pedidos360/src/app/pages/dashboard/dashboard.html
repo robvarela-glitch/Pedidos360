@@ -1,156 +1,160 @@
-<div class="dashboard-container">
+<app-sidebar></app-sidebar>
 
-  <aside class="sidebar">
+<main class="dashboard-content">
 
-    <div class="brand">
-      <h1>Pedidos<span>360</span></h1>
-      <p>Gestión empresarial</p>
+  <header class="dashboard-header">
+
+    <div>
+      <h1>Dashboard</h1>
+      <p>Resumen general de Pedidos360</p>
     </div>
 
-    <nav class="menu">
+  </header>
 
-      <a routerLink="/dashboard" class="menu-item active">
-        📊
-        <span>Dashboard</span>
-      </a>
+  <section class="welcome-section">
 
-      <a routerLink="/orders" class="menu-item">
-        📦
-        <span>Pedidos</span>
-      </a>
+    <h2>Bienvenido a Pedidos360 👋</h2>
 
-      <a routerLink="/catalog" class="menu-item">
-        🛍️
-        <span>Catálogo</span>
-      </a>
+    <p>
+      Gestiona tus pedidos, productos y operaciones
+      desde una sola plataforma.
+    </p>
 
-    </nav>
+  </section>
 
-    <div class="sidebar-footer">
-      <button>🚪 Cerrar sesión</button>
-    </div>
+  <section class="stats-grid">
 
-  </aside>
-
-
-  <main class="main-content">
-
-    <header class="topbar">
+    <div class="stat-card">
+      <div class="stat-icon">📦</div>
 
       <div>
-        <h2>Dashboard</h2>
-        <p>Resumen general de Pedidos360</p>
+        <span>Pedidos totales</span>
+        <strong>128</strong>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">⏳</div>
+
+      <div>
+        <span>Pedidos pendientes</span>
+        <strong>24</strong>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">🚚</div>
+
+      <div>
+        <span>En despacho</span>
+        <strong>18</strong>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">💰</div>
+
+      <div>
+        <span>Ventas del mes</span>
+        <strong>$4.850.000</strong>
+      </div>
+    </div>
+
+  </section>
+
+  <section class="recent-orders">
+
+    <div class="section-header">
+
+      <div>
+        <h2>Pedidos recientes</h2>
+        <p>Últimos pedidos registrados en el sistema</p>
       </div>
 
-      <div class="user-info">
-        <div class="user-avatar">R</div>
+      <a routerLink="/orders" class="view-all">
+        Ver todos →
+      </a>
 
-        <div>
-          <strong>Usuario</strong>
-          <small>Administrador</small>
-        </div>
-      </div>
+    </div>
 
-    </header>
+    <div class="table-container">
 
+      <table>
 
-    <section class="welcome">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Cliente</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+            <th>Total</th>
+          </tr>
+        </thead>
 
-      <h2>Bienvenido a Pedidos360 👋</h2>
+        <tbody>
 
-      <p>
-        Gestiona pedidos, productos y el despacho de tu empresa
-        desde un solo lugar.
-      </p>
+          <tr>
+            <td>#001</td>
+            <td>Empresa ABC</td>
+            <td>11/09/2026</td>
 
-    </section>
+            <td>
+              <span class="status accepted">
+                Aceptado
+              </span>
+            </td>
 
+            <td>$125.000</td>
+          </tr>
 
-    <section class="stats">
+          <tr>
+            <td>#002</td>
+            <td>Comercial XYZ</td>
+            <td>11/09/2026</td>
 
-      <div class="stat-card">
-        <div class="stat-icon">📦</div>
-        <div>
-          <span>Pedidos</span>
-          <strong>24</strong>
-          <small>Pedidos registrados</small>
-        </div>
-      </div>
+            <td>
+              <span class="status preparing">
+                En preparación
+              </span>
+            </td>
 
-      <div class="stat-card">
-        <div class="stat-icon">🛍️</div>
-        <div>
-          <span>Productos</span>
-          <strong>86</strong>
-          <small>Productos disponibles</small>
-        </div>
-      </div>
+            <td>$89.500</td>
+          </tr>
 
-      <div class="stat-card">
-        <div class="stat-icon">🚚</div>
-        <div>
-          <span>Despachos</span>
-          <strong>18</strong>
-          <small>En proceso</small>
-        </div>
-      </div>
+          <tr>
+            <td>#003</td>
+            <td>Distribuidora Sur</td>
+            <td>10/09/2026</td>
 
-      <div class="stat-card">
-        <div class="stat-icon">✅</div>
-        <div>
-          <span>Entregados</span>
-          <strong>32</strong>
-          <small>Pedidos completados</small>
-        </div>
-      </div>
+            <td>
+              <span class="status dispatched">
+                Despachado
+              </span>
+            </td>
 
-    </section>
+            <td>$210.000</td>
+          </tr>
 
+          <tr>
+            <td>#004</td>
+            <td>Comercial Norte</td>
+            <td>09/09/2026</td>
 
-    <section class="recent-orders">
+            <td>
+              <span class="status delivered">
+                Entregado
+              </span>
+            </td>
 
-      <div class="section-header">
-        <h3>Pedidos recientes</h3>
+            <td>$74.990</td>
+          </tr>
 
-        <a routerLink="/orders">
-          Ver todos
-        </a>
-      </div>
+        </tbody>
 
-      <div class="orders-table">
+      </table>
 
-        <div class="table-header">
-          <span>ID</span>
-          <span>Cliente</span>
-          <span>Estado</span>
-          <span>Total</span>
-        </div>
+    </div>
 
-        <div class="table-row">
-          <span>#PED-001</span>
-          <span>Empresa ABC</span>
-          <span class="status accepted">Aceptado</span>
-          <span>$125.000</span>
-        </div>
+  </section>
 
-        <div class="table-row">
-          <span>#PED-002</span>
-          <span>Comercial XYZ</span>
-          <span class="status preparation">En preparación</span>
-          <span>$89.500</span>
-        </div>
-
-        <div class="table-row">
-          <span>#PED-003</span>
-          <span>Distribuidora Sur</span>
-          <span class="status delivered">Entregado</span>
-          <span>$210.000</span>
-        </div>
-
-      </div>
-
-    </section>
-
-  </main>
-
-</div>
+</main>

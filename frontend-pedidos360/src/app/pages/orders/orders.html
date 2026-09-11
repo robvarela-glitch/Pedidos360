@@ -1,79 +1,170 @@
-<div class="orders-container">
+<app-sidebar></app-sidebar>
 
-  <div class="page-header">
+<main class="orders-content">
+
+  <header class="page-header">
+
     <div>
-      <h2>Pedidos</h2>
-      <p>Gestiona y controla los pedidos de tu empresa</p>
+      <h1>Pedidos</h1>
+      <p>Gestiona y controla los pedidos registrados</p>
     </div>
 
     <button class="new-order-button">
       + Nuevo pedido
     </button>
-  </div>
 
-  <div class="filters">
+  </header>
 
-    <input
-      type="text"
-      placeholder="🔍 Buscar pedido o cliente..."
-    >
+  <section class="orders-card">
 
-    <select>
-      <option>Todos los estados</option>
-      <option>Creado</option>
-      <option>Aceptado</option>
-      <option>En preparación</option>
-      <option>Despachado</option>
-      <option>Entregado</option>
-      <option>Cancelado</option>
-    </select>
+    <div class="filters">
 
-  </div>
+      <div class="filter-group">
 
-  <div class="orders-card">
+        <label for="search">
+          Buscar
+        </label>
 
-    <div class="table-header">
-      <span>ID Pedido</span>
-      <span>Cliente</span>
-      <span>Fecha</span>
-      <span>Estado</span>
-      <span>Total</span>
-      <span>Acciones</span>
-    </div>
-
-    @for (order of orders; track order.id) {
-
-      <div class="order-row">
-
-        <strong>#PED-{{ order.id.toString().padStart(3, '0') }}</strong>
-
-        <span>{{ order.customer }}</span>
-
-        <span>{{ order.date }}</span>
-
-        <span
-          class="status"
-          [class.accepted]="order.status === 'ACEPTADO'"
-          [class.preparation]="order.status === 'EN_PREPARACIÓN'"
-          [class.dispatched]="order.status === 'DESPACHADO'"
-          [class.delivered]="order.status === 'ENTREGADO'"
-          [class.cancelled]="order.status === 'CANCELADO'"
+        <input
+          id="search"
+          type="text"
+          placeholder="Buscar por cliente o ID..."
         >
-          {{ order.status }}
-        </span>
-
-        <strong>
-          ${{ order.total.toLocaleString('es-CL') }}
-        </strong>
-
-        <button class="view-button">
-          Ver
-        </button>
 
       </div>
 
-    }
+      <div class="filter-group">
 
-  </div>
+        <label for="status">
+          Estado
+        </label>
 
-</div>
+        <select id="status">
+
+          <option value="">
+            Todos
+          </option>
+
+          <option value="CREADO">
+            Creado
+          </option>
+
+          <option value="ACEPTADO">
+            Aceptado
+          </option>
+
+          <option value="EN_PREPARACIÓN">
+            En preparación
+          </option>
+
+          <option value="DESPACHADO">
+            Despachado
+          </option>
+
+          <option value="ENTREGADO">
+            Entregado
+          </option>
+
+          <option value="CANCELADO">
+            Cancelado
+          </option>
+
+        </select>
+
+      </div>
+
+    </div>
+
+    <div class="table-container">
+
+      <table>
+
+        <thead>
+
+          <tr>
+            <th>ID</th>
+            <th>Cliente</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+            <th>Total</th>
+            <th>Acciones</th>
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          @for (order of orders; track order.id) {
+
+            <tr>
+
+              <td>
+                <strong>#{{ order.id }}</strong>
+              </td>
+
+              <td>
+                {{ order.customer }}
+              </td>
+
+              <td>
+                {{ order.date }}
+              </td>
+
+              <td>
+
+                <span
+                  class="status"
+                  [class.created]="order.status === 'CREADO'"
+                  [class.accepted]="order.status === 'ACEPTADO'"
+                  [class.preparing]="order.status === 'EN_PREPARACIÓN'"
+                  [class.dispatched]="order.status === 'DESPACHADO'"
+                  [class.delivered]="order.status === 'ENTREGADO'"
+                  [class.cancelled]="order.status === 'CANCELADO'">
+
+                  {{ order.status }}
+
+                </span>
+
+              </td>
+
+              <td>
+                ${{ order.total | number:'1.0-0' }}
+              </td>
+
+              <td>
+
+                <button class="action-button">
+                  Ver
+                </button>
+
+                <button class="action-button edit">
+                  Editar
+                </button>
+
+              </td>
+
+            </tr>
+
+          }
+
+          @if (orders.length === 0) {
+
+            <tr>
+
+              <td colspan="6" class="empty-state">
+                No hay pedidos registrados.
+              </td>
+
+            </tr>
+
+          }
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </section>
+
+</main>

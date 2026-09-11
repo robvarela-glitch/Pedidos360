@@ -1,11 +1,13 @@
 import { Component, OnInit } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
 
 import { Order } from '../../core/models/order.model';
 import { OrdersService } from '../../core/services/orders.service';
+import { Sidebar } from '../../shared/components/sidebar/sidebar';
 
 @Component({
   selector: 'app-orders',
-  imports: [],
+  imports: [DecimalPipe, Sidebar],
   templateUrl: './orders.html',
   styleUrl: './orders.css'
 })

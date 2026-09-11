@@ -1,11 +1,13 @@
 import { Component, OnInit } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
 
 import { Product } from '../../core/models/product.model';
 import { CatalogService } from '../../core/services/catalog.service';
+import { Sidebar } from '../../shared/components/sidebar/sidebar';
 
 @Component({
   selector: 'app-catalog',
-  imports: [],
+  imports: [DecimalPipe, Sidebar],
   templateUrl: './catalog.html',
   styleUrl: './catalog.css'
 })

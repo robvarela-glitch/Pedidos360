@@ -1,0 +1,49 @@
+<aside class="sidebar">
+
+  <div class="logo">
+    <h1>Pedidos<span>360</span></h1>
+    <p>Gestión de pedidos</p>
+  </div>
+
+  <nav class="menu">
+
+    <a
+      routerLink="/dashboard"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: true }">
+      <span class="icon">🏠</span>
+      <span>Dashboard</span>
+    </a>
+
+    <a
+      routerLink="/orders"
+      routerLinkActive="active">
+      <span class="icon">📦</span>
+      <span>Pedidos</span>
+    </a>
+
+    <a
+      routerLink="/catalog"
+      routerLinkActive="active">
+      <span class="icon">🛒</span>
+      <span>Catálogo</span>
+    </a>
+
+    <a href="#" class="disabled-link">
+      <span class="icon">📊</span>
+      <span>Reportes</span>
+    </a>
+
+    <a href="#" class="disabled-link">
+      <span class="icon">📝</span>
+      <span>Auditoría</span>
+    </a>
+
+  </nav>
+
+  <div class="sidebar-footer">
+    <p>Pedidos360</p>
+    <small>Cloud Native Platform</small>
+  </div>
+
+</aside>
