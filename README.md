@@ -1,4 +1,11 @@
-# Backend Pedidos360 
+# Backend Pedidos360
+
+## Integrantes
+
+- Roberto Varela
+- Daniel More
+- Benjamín Madariaga
+- Agustín Moya
 
 Microservicios: `orders`, `catalog`, `notify`, `report`, `audit`.
 Infraestructura: Oracle, RabbitMQ, Kafka + Zookeeper, Docker Compose, EC2.
