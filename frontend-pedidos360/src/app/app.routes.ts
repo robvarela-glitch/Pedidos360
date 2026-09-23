@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
 
+import { MsalGuard } from '@azure/msal-angular';
+
 import { Login } from './pages/login/login';
 import { Dashboard } from './pages/dashboard/dashboard';
 import { Catalog } from './pages/catalog/catalog';
@@ -13,8 +15,6 @@ import { NewProduct } from './pages/new-product/new-product';
 
 import { NewOrder } from './pages/new-order/new-order';
 import { OrderDetail } from './pages/order-detail/order-detail';
-
-import { authGuard } from './core/guards/auth-guard';
 
 export const routes: Routes = [
 
@@ -32,61 +32,61 @@ export const routes: Routes = [
   {
     path: 'dashboard',
     component: Dashboard,
-    canActivate: [authGuard]
+    canActivate: [MsalGuard]
   },
 
   {
     path: 'catalog',
     component: Catalog,
-    canActivate: [authGuard]
+    canActivate: [MsalGuard]
   },
 
   {
     path: 'catalog/new',
     component: NewProduct,
-    canActivate: [authGuard]
+    canActivate: [MsalGuard]
   },
 
   {
     path: 'catalog/:id/edit',
     component: EditProduct,
-    canActivate: [authGuard]
+    canActivate: [MsalGuard]
   },
 
   {
     path: 'catalog/:id',
     component: ProductDetail,
-    canActivate: [authGuard]
+    canActivate: [MsalGuard]
   },
 
   {
     path: 'orders',
     component: Orders,
-    canActivate: [authGuard]
+    canActivate: [MsalGuard]
   },
 
   {
     path: 'orders/new',
     component: NewOrder,
-    canActivate: [authGuard]
+    canActivate: [MsalGuard]
   },
 
   {
     path: 'orders/:id',
     component: OrderDetail,
-    canActivate: [authGuard]
+    canActivate: [MsalGuard]
   },
 
   {
     path: 'reports',
     component: Reports,
-    canActivate: [authGuard]
+    canActivate: [MsalGuard]
   },
 
   {
     path: 'audit',
     component: Audit,
-    canActivate: [authGuard]
+    canActivate: [MsalGuard]
   }
 
 ];

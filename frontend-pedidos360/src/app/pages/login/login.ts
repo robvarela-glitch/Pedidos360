@@ -7,27 +7,33 @@ import { RedirectRequest } from '@azure/msal-browser';
   standalone: true,
   imports: [],
   templateUrl: './login.html',
-  styleUrl: './login.css'
+  styleUrl: './login.css',
 })
 export class Login {
 
   private readonly msalService = inject(MsalService);
 
   login(): void {
-    console.log('LOGIN PEDIDOS360 EJECUTADO');
+
+    alert('1 - BOTON FUNCIONA');
+
+    console.log('1 - BOTON FUNCIONA');
 
     const loginRequest: RedirectRequest = {
       scopes: ['User.Read']
     };
 
-    console.log('Intentando abrir Microsoft...');
+    alert('2 - EJECUTANDO LOGIN REDIRECT');
+
+    console.log('2 - EJECUTANDO LOGIN REDIRECT');
 
     this.msalService.loginRedirect(loginRequest).subscribe({
       next: () => {
-        console.log('Redirección a Microsoft iniciada');
+        console.log('3 - LOGIN REDIRECT EJECUTADO');
       },
-      error: (error: unknown) => {
-        console.error('ERROR MSAL:', error);
+      error: (error) => {
+        console.error('4 - ERROR LOGIN REDIRECT:', error);
+        alert('4 - ERROR LOGIN REDIRECT: ' + error);
       }
     });
   }

@@ -21,6 +21,7 @@ import {
   MsalGuard,
   MsalInterceptor,
   MsalService,
+  MsalBroadcastService,
   MSAL_INSTANCE,
   MSAL_GUARD_CONFIG,
   MSAL_INTERCEPTOR_CONFIG
@@ -28,11 +29,13 @@ import {
 
 import { routes } from './app.routes';
 
+
 export function MSALInstanceFactory(): IPublicClientApplication {
   return new PublicClientApplication({
     auth: {
       clientId: 'bd954135-48c5-4201-ac11-37071ec979ab',
-      authority: 'https://login.microsoftonline.com/d2199b76-e9ac-4fc3-92d6-bbeed1d825dc',
+      authority:
+        'https://login.microsoftonline.com/d2199b76-e9ac-4fc3-92d6-bbeed1d825dc',
       redirectUri: 'http://localhost:4200',
       postLogoutRedirectUri: 'http://localhost:4200'
     },
@@ -41,6 +44,7 @@ export function MSALInstanceFactory(): IPublicClientApplication {
     }
   });
 }
+
 
 export function MSALGuardConfigFactory() {
   return {
@@ -51,6 +55,7 @@ export function MSALGuardConfigFactory() {
   };
 }
 
+
 export function MSALInterceptorConfigFactory() {
   const protectedResourceMap = new Map<string, Array<string>>();
 
@@ -60,8 +65,10 @@ export function MSALInterceptorConfigFactory() {
   };
 }
 
+
 export const appConfig: ApplicationConfig = {
   providers: [
+
     provideBrowserGlobalErrorListeners(),
 
     provideRouter(routes),
@@ -93,6 +100,8 @@ export const appConfig: ApplicationConfig = {
 
     MsalService,
 
-    MsalGuard
+    MsalGuard,
+
+    MsalBroadcastService
   ]
 };
