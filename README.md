@@ -1,4 +1,4 @@
-# Backend Pedidos360 — Parte de Agustín Moya
+# Backend Pedidos360 
 
 Microservicios: `orders`, `catalog`, `notify`, `report`, `audit`.
 Infraestructura: Oracle, RabbitMQ, Kafka + Zookeeper, Docker Compose, EC2.
