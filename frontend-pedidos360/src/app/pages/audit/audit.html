@@ -1,0 +1,599 @@
+<app-sidebar></app-sidebar>
+
+<main class="audit-page">
+
+  <div class="audit-container">
+
+    <!-- HEADER -->
+
+    <header class="page-header">
+
+      <div class="page-header-info">
+
+        <div class="breadcrumb">
+
+          <span>
+            Administración
+          </span>
+
+          <span>
+            /
+          </span>
+
+          <strong>
+            Auditoría
+          </strong>
+
+        </div>
+
+        <span class="eyebrow">
+          CONTROL Y TRAZABILIDAD
+        </span>
+
+        <h1>
+          Auditoría
+        </h1>
+
+        <p>
+          Consulta y supervisa las acciones realizadas dentro de la plataforma.
+        </p>
+
+      </div>
+
+
+      <div class="audit-status">
+
+        <span class="status-dot">
+        </span>
+
+        <div>
+
+          <strong>
+            Registro activo
+          </strong>
+
+          <small>
+            Trazabilidad habilitada
+          </small>
+
+        </div>
+
+      </div>
+
+    </header>
+
+
+    <!-- RESUMEN -->
+
+    <section class="summary-grid">
+
+
+      <article class="summary-card">
+
+        <div class="summary-icon blue">
+          ≡
+        </div>
+
+        <div class="summary-info">
+
+          <span>
+            Total de eventos
+          </span>
+
+          <strong>
+            {{ getTotalRecords() }}
+          </strong>
+
+          <small>
+            registros almacenados
+          </small>
+
+        </div>
+
+      </article>
+
+
+      <article class="summary-card">
+
+        <div class="summary-icon purple">
+          A
+        </div>
+
+        <div class="summary-info">
+
+          <span>
+            Administrador
+          </span>
+
+          <strong>
+            {{ getAdminActions() }}
+          </strong>
+
+          <small>
+            acciones registradas
+          </small>
+
+        </div>
+
+      </article>
+
+
+      <article class="summary-card">
+
+        <div class="summary-icon orange">
+          O
+        </div>
+
+        <div class="summary-info">
+
+          <span>
+            Operador
+          </span>
+
+          <strong>
+            {{ getOperatorActions() }}
+          </strong>
+
+          <small>
+            acciones registradas
+          </small>
+
+        </div>
+
+      </article>
+
+
+      <article class="summary-card">
+
+        <div class="summary-icon green">
+          ✓
+        </div>
+
+        <div class="summary-info">
+
+          <span>
+            Eventos de hoy
+          </span>
+
+          <strong>
+            {{ getTodayRecords() }}
+          </strong>
+
+          <small>
+            registrados durante el día
+          </small>
+
+        </div>
+
+      </article>
+
+    </section>
+
+
+    <!-- FILTROS -->
+
+    <section class="filters-card">
+
+      <div class="filters-header">
+
+        <div>
+
+          <span class="card-eyebrow">
+            CONSULTA
+          </span>
+
+          <h2>
+            Buscar eventos
+          </h2>
+
+          <p>
+            Filtra el registro por usuario, acción o módulo.
+          </p>
+
+        </div>
+
+
+        <div class="result-count">
+
+          <strong>
+            {{ filteredRecords.length }}
+          </strong>
+
+          <span>
+            resultados
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <div class="filters-row">
+
+
+        <!-- BUSCADOR -->
+
+        <div class="search-field">
+
+          <label>
+            Buscar
+          </label>
+
+          <div class="search-input">
+
+            <span class="search-icon">
+
+              <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true">
+
+                <circle
+                  cx="11"
+                  cy="11"
+                  r="7">
+                </circle>
+
+                <path
+                  d="m16 16 5 5">
+                </path>
+
+              </svg>
+
+            </span>
+
+
+            <input
+              type="text"
+              placeholder="Usuario, acción, módulo o descripción..."
+              [value]="searchText"
+              (input)="onSearch($event)"
+            />
+
+          </div>
+
+        </div>
+
+
+        <!-- USUARIO -->
+
+        <div class="filter-field">
+
+          <label>
+            Usuario
+          </label>
+
+          <select
+            [value]="selectedUser"
+            (change)="onUserChange($event)">
+
+            <option value="">
+              Todos los usuarios
+            </option>
+
+            @for (
+              user of users;
+              track user
+            ) {
+
+              <option [value]="user">
+                {{ user }}
+              </option>
+
+            }
+
+          </select>
+
+        </div>
+
+
+        <!-- ACCIÓN -->
+
+        <div class="filter-field">
+
+          <label>
+            Evento
+          </label>
+
+          <select
+            [value]="selectedAction"
+            (change)="onActionChange($event)">
+
+            <option value="">
+              Todos los eventos
+            </option>
+
+            @for (
+              action of actions;
+              track action
+            ) {
+
+              <option [value]="action">
+                {{ action }}
+              </option>
+
+            }
+
+          </select>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- REGISTRO -->
+
+    <section class="audit-card">
+
+      <div class="audit-card-header">
+
+        <div>
+
+          <span class="card-eyebrow">
+            REGISTRO DE ACTIVIDAD
+          </span>
+
+          <h2>
+            Historial de eventos
+          </h2>
+
+          <p>
+            Registro detallado de las operaciones realizadas en Pedidos360.
+          </p>
+
+        </div>
+
+
+        <div class="security-badge">
+
+          <span>
+            ✓
+          </span>
+
+          Auditoría habilitada
+
+        </div>
+
+      </div>
+
+
+      @if (filteredRecords.length > 0) {
+
+        <div class="table-wrapper">
+
+          <table class="audit-table">
+
+            <thead>
+
+              <tr>
+
+                <th>
+                  USUARIO
+                </th>
+
+                <th>
+                  EVENTO
+                </th>
+
+                <th>
+                  MÓDULO
+                </th>
+
+                <th>
+                  DESCRIPCIÓN
+                </th>
+
+                <th>
+                  FECHA Y HORA
+                </th>
+
+              </tr>
+
+            </thead>
+
+
+            <tbody>
+
+              @for (
+                record of filteredRecords;
+                track record.id
+              ) {
+
+                <tr>
+
+
+                  <!-- USUARIO -->
+
+                  <td>
+
+                    <div class="user-cell">
+
+                      <div class="user-avatar">
+
+                        {{ record.user.charAt(0) }}
+
+                      </div>
+
+                      <div>
+
+                        <strong>
+                          {{ record.user }}
+                        </strong>
+
+                        <small>
+                          Usuario autorizado
+                        </small>
+
+                      </div>
+
+                    </div>
+
+                  </td>
+
+
+                  <!-- EVENTO -->
+
+                  <td>
+
+                    <span
+                      class="action-badge"
+                      [class]="getActionClass(record.action)">
+
+                      <span class="action-icon">
+
+                        @if (
+                          record.action.includes('Creación')
+                        ) {
+                          +
+                        }
+
+                        @if (
+                          record.action.includes('Actualización')
+                        ) {
+                          ↻
+                        }
+
+                        @if (
+                          record.action.includes('Cambio')
+                        ) {
+                          ↔
+                        }
+
+                      </span>
+
+                      {{ record.action }}
+
+                    </span>
+
+                  </td>
+
+
+                  <!-- MÓDULO -->
+
+                  <td>
+
+                    <span
+                      class="module-badge"
+                      [class]="getModuleClass(record.module)">
+
+                      {{ record.module }}
+
+                    </span>
+
+                  </td>
+
+
+                  <!-- DESCRIPCIÓN -->
+
+                  <td>
+
+                    <div class="description-cell">
+
+                      <strong>
+                        {{ record.description }}
+                      </strong>
+
+                      <small>
+                        Evento registrado correctamente
+                      </small>
+
+                    </div>
+
+                  </td>
+
+
+                  <!-- FECHA -->
+
+                  <td>
+
+                    <div class="date-cell">
+
+                      <strong>
+                        {{ record.date.split(' ')[0] }}
+                      </strong>
+
+                      <small>
+                        {{ record.date.split(' ')[1] }}
+                      </small>
+
+                    </div>
+
+                  </td>
+
+                </tr>
+
+              }
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      }
+
+
+      <!-- SIN RESULTADOS -->
+
+      @if (filteredRecords.length === 0) {
+
+        <div class="empty-state">
+
+          <div class="empty-icon">
+
+            <svg
+              viewBox="0 0 24 24"
+              aria-hidden="true">
+
+              <circle
+                cx="11"
+                cy="11"
+                r="7">
+              </circle>
+
+              <path
+                d="m16 16 5 5">
+              </path>
+
+            </svg>
+
+          </div>
+
+          <h3>
+            No encontramos eventos
+          </h3>
+
+          <p>
+            Prueba modificando los filtros de búsqueda.
+          </p>
+
+        </div>
+
+      }
+
+    </section>
+
+
+    <!-- FOOTER INFORMATIVO -->
+
+    <div class="audit-footer">
+
+      <div class="footer-status">
+
+        <span class="online-dot">
+        </span>
+
+        Sistema operativo
+
+      </div>
+
+      <span>
+        Mostrando {{ filteredRecords.length }} de {{ auditRecords.length }} eventos
+      </span>
+
+    </div>
+
+  </div>
+
+</main>

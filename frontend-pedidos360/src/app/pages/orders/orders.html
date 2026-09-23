@@ -1,0 +1,527 @@
+<app-sidebar></app-sidebar>
+
+<main class="orders-page">
+
+  <div class="orders-container">
+
+    <!-- HEADER -->
+    <header class="page-header">
+
+      <div class="page-header-info">
+
+        <div class="breadcrumb">
+
+          <span>
+            Gestión
+          </span>
+
+          <span>
+            /
+          </span>
+
+          <strong>
+            Pedidos
+          </strong>
+
+        </div>
+
+        <span class="eyebrow">
+          GESTIÓN DE PEDIDOS
+        </span>
+
+        <h1>
+          Pedidos
+        </h1>
+
+        <p>
+          Administra, monitorea y realiza seguimiento de los pedidos registrados.
+        </p>
+
+      </div>
+
+
+      <a
+        routerLink="/orders/new"
+        class="new-order-button">
+
+        <span class="plus-icon">
+          +
+        </span>
+
+        Nuevo pedido
+
+      </a>
+
+    </header>
+
+
+    <!-- RESUMEN -->
+    <section class="summary-grid">
+
+
+      <article class="summary-card">
+
+        <div class="summary-icon blue">
+          ▣
+        </div>
+
+        <div class="summary-info">
+
+          <span>
+            Total pedidos
+          </span>
+
+          <strong>
+            {{ getTotalOrders() }}
+          </strong>
+
+          <small>
+            registrados
+          </small>
+
+        </div>
+
+      </article>
+
+
+      <article class="summary-card">
+
+        <div class="summary-icon orange">
+          ◷
+        </div>
+
+        <div class="summary-info">
+
+          <span>
+            Pendientes
+          </span>
+
+          <strong>
+            {{ getPendingOrders() }}
+          </strong>
+
+          <small>
+            en proceso
+          </small>
+
+        </div>
+
+      </article>
+
+
+      <article class="summary-card">
+
+        <div class="summary-icon purple">
+          ↗
+        </div>
+
+        <div class="summary-info">
+
+          <span>
+            Despachados
+          </span>
+
+          <strong>
+            {{ getDispatchedOrders() }}
+          </strong>
+
+          <small>
+            en distribución
+          </small>
+
+        </div>
+
+      </article>
+
+
+      <article class="summary-card">
+
+        <div class="summary-icon green">
+          ✓
+        </div>
+
+        <div class="summary-info">
+
+          <span>
+            Entregados
+          </span>
+
+          <strong>
+            {{ getDeliveredOrders() }}
+          </strong>
+
+          <small>
+            completados
+          </small>
+
+        </div>
+
+      </article>
+
+    </section>
+
+
+    <!-- FILTROS -->
+    <section class="filters-card">
+
+      <div class="filters-header">
+
+        <div>
+
+          <span class="card-eyebrow">
+            CONSULTA
+          </span>
+
+          <h2>
+            Buscar y filtrar pedidos
+          </h2>
+
+          <p>
+            Encuentra rápidamente un pedido por cliente, ID o estado.
+          </p>
+
+        </div>
+
+
+        <div class="result-count">
+
+          <strong>
+            {{ filteredOrders.length }}
+          </strong>
+
+          <span>
+            resultados
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <div class="filters-row">
+
+
+        <!-- BUSCADOR -->
+        <div class="search-field">
+
+          <label>
+            Buscar pedido
+          </label>
+
+          <div class="search-input">
+
+            <span class="search-icon">
+
+              <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true">
+
+                <circle
+                  cx="11"
+                  cy="11"
+                  r="7">
+                </circle>
+
+                <path
+                  d="m16 16 5 5">
+                </path>
+
+              </svg>
+
+            </span>
+
+            <input
+              type="text"
+              placeholder="ID del pedido o nombre del cliente..."
+              [value]="searchText"
+              (input)="onSearch($event)"
+            />
+
+          </div>
+
+        </div>
+
+
+        <!-- ESTADO -->
+        <div class="status-field">
+
+          <label>
+            Estado
+          </label>
+
+          <select
+            [value]="selectedStatus"
+            (change)="onStatusChange($event)">
+
+            <option value="">
+              Todos los estados
+            </option>
+
+            @for (
+              status of statuses;
+              track status
+            ) {
+
+              <option [value]="status">
+                {{ getStatusLabel(status) }}
+              </option>
+
+            }
+
+          </select>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- TABLA -->
+    <section class="orders-card">
+
+      <div class="orders-card-header">
+
+        <div>
+
+          <span class="card-eyebrow">
+            REGISTRO
+          </span>
+
+          <h2>
+            Listado de pedidos
+          </h2>
+
+          <p>
+            Consulta el estado y detalle de cada pedido.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      @if (filteredOrders.length > 0) {
+
+        <div class="table-wrapper">
+
+          <table class="orders-table">
+
+            <thead>
+
+              <tr>
+
+                <th>
+                  PEDIDO
+                </th>
+
+                <th>
+                  CLIENTE
+                </th>
+
+                <th>
+                  FECHA
+                </th>
+
+                <th>
+                  ESTADO
+                </th>
+
+                <th>
+                  TOTAL
+                </th>
+
+                <th>
+                  ACCIÓN
+                </th>
+
+              </tr>
+
+            </thead>
+
+
+            <tbody>
+
+              @for (
+                order of filteredOrders;
+                track order.id
+              ) {
+
+                <tr>
+
+
+                  <!-- ID -->
+                  <td>
+
+                    <div class="order-cell">
+
+                      <div class="order-icon">
+                        #
+                      </div>
+
+                      <div>
+
+                        <strong>
+                          PED-{{ order.id }}
+                        </strong>
+
+                        <small>
+                          Pedido registrado
+                        </small>
+
+                      </div>
+
+                    </div>
+
+                  </td>
+
+
+                  <!-- CLIENTE -->
+                  <td>
+
+                    <div class="customer-cell">
+
+                      <div class="customer-avatar">
+                        {{ order.customer.charAt(0) }}
+                      </div>
+
+                      <span>
+                        {{ order.customer }}
+                      </span>
+
+                    </div>
+
+                  </td>
+
+
+                  <!-- FECHA -->
+                  <td>
+
+                    <span class="date-value">
+                      {{ order.date }}
+                    </span>
+
+                  </td>
+
+
+                  <!-- ESTADO -->
+                  <td>
+
+                    <span
+                      class="status-badge"
+                      [class]="getStatusClass(order.status)">
+
+                      <span class="status-dot">
+                      </span>
+
+                      {{ getStatusLabel(order.status) }}
+
+                    </span>
+
+                  </td>
+
+
+                  <!-- TOTAL -->
+                  <td>
+
+                    <strong class="order-total">
+                      {{ formatPrice(order.total) }}
+                    </strong>
+
+                  </td>
+
+
+                  <!-- ACCIÓN -->
+                  <td>
+
+                    <a
+                      [routerLink]="[
+                        '/orders',
+                        order.id
+                      ]"
+                      class="detail-button">
+
+                      Ver detalle
+
+                      <span>
+                        →
+                      </span>
+
+                    </a>
+
+                  </td>
+
+                </tr>
+
+              }
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      }
+
+
+      <!-- SIN RESULTADOS -->
+      @if (filteredOrders.length === 0) {
+
+        <div class="empty-state">
+
+          <div class="empty-icon">
+
+            <svg
+              viewBox="0 0 24 24"
+              aria-hidden="true">
+
+              <circle
+                cx="11"
+                cy="11"
+                r="7">
+              </circle>
+
+              <path
+                d="m16 16 5 5">
+              </path>
+
+            </svg>
+
+          </div>
+
+          <h3>
+            No encontramos pedidos
+          </h3>
+
+          <p>
+            Prueba con otro ID, cliente o estado.
+          </p>
+
+        </div>
+
+      }
+
+    </section>
+
+
+    <!-- PIE INFORMATIVO -->
+    <div class="orders-footer">
+
+      <div class="footer-status">
+
+        <span class="online-dot">
+        </span>
+
+        Sistema operativo
+
+      </div>
+
+      <span>
+        Mostrando {{ filteredOrders.length }} de {{ orders.length }} pedidos
+      </span>
+
+    </div>
+
+  </div>
+
+</main>

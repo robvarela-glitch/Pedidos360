@@ -1,0 +1,664 @@
+<app-sidebar></app-sidebar>
+
+<main class="edit-page">
+
+
+  @if (loading) {
+
+    <div class="loading">
+
+      <div class="spinner"></div>
+
+      <p>
+        Cargando producto...
+      </p>
+
+    </div>
+
+  }
+
+
+  @if (!loading && !product) {
+
+    <section class="not-found">
+
+      <div class="not-found-icon">
+        📦
+      </div>
+
+      <h1>
+        Producto no encontrado
+      </h1>
+
+      <p>
+        No fue posible encontrar el producto solicitado.
+      </p>
+
+      <a
+        routerLink="/catalog"
+        class="back-button"
+      >
+        ← Volver al catálogo
+      </a>
+
+    </section>
+
+  }
+
+
+  @if (!loading && product) {
+
+    <div class="edit-container">
+
+
+      <!-- =====================================
+           BREADCRUMB
+      ====================================== -->
+
+      <div class="breadcrumb">
+
+        <a routerLink="/catalog">
+          Gestión
+        </a>
+
+        <span>/</span>
+
+        <a routerLink="/catalog">
+          Catálogo
+        </a>
+
+        <span>/</span>
+
+        <strong>
+          Editar producto
+        </strong>
+
+      </div>
+
+
+      <!-- =====================================
+           HEADER
+      ====================================== -->
+
+      <header class="page-header">
+
+        <div>
+
+          <button
+            class="back-link"
+            type="button"
+            (click)="cancel()"
+          >
+            ← Volver al producto
+          </button>
+
+          <h1>
+            Editar producto
+          </h1>
+
+          <p>
+            Actualiza la información, precio e inventario del producto.
+          </p>
+
+        </div>
+
+
+        <div class="product-reference">
+
+          <span>
+            ID
+          </span>
+
+          <strong>
+            #{{ product.id }}
+          </strong>
+
+        </div>
+
+      </header>
+
+
+      <!-- =====================================
+           FORMULARIO
+      ====================================== -->
+
+      <form
+        #productForm="ngForm"
+        (ngSubmit)="saveProduct(productForm)"
+        class="edit-form"
+      >
+
+
+        <!-- ===================================
+             INFORMACIÓN GENERAL
+        ==================================== -->
+
+        <section class="form-card">
+
+
+          <div class="form-heading">
+
+            <div class="heading-icon blue">
+              📦
+            </div>
+
+            <div>
+
+              <h2>
+                Información general
+              </h2>
+
+              <p>
+                Datos principales del producto
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div class="form-grid">
+
+
+            <!-- NOMBRE -->
+
+            <div class="form-group full">
+
+              <label>
+                Nombre del producto
+                <span>*</span>
+              </label>
+
+              <input
+                type="text"
+                name="name"
+                [(ngModel)]="product.name"
+                required
+                minlength="3"
+                placeholder="Ej. Logitech G915"
+                #name="ngModel"
+              />
+
+              @if (
+                name.invalid &&
+                name.touched
+              ) {
+
+                <small class="error">
+                  Ingresa un nombre válido.
+                </small>
+
+              }
+
+            </div>
+
+
+            <!-- MARCA -->
+
+            <div class="form-group">
+
+              <label>
+                Marca
+                <span>*</span>
+              </label>
+
+              <input
+                type="text"
+                name="brand"
+                [(ngModel)]="product.brand"
+                required
+                placeholder="Ej. Logitech"
+                #brand="ngModel"
+              />
+
+              @if (
+                brand.invalid &&
+                brand.touched
+              ) {
+
+                <small class="error">
+                  Ingresa la marca.
+                </small>
+
+              }
+
+            </div>
+
+
+            <!-- SKU -->
+
+            <div class="form-group">
+
+              <label>
+                SKU
+                <span>*</span>
+              </label>
+
+              <input
+                type="text"
+                name="sku"
+                [(ngModel)]="product.sku"
+                required
+                placeholder="Ej. TEC-001"
+                #sku="ngModel"
+              />
+
+              @if (
+                sku.invalid &&
+                sku.touched
+              ) {
+
+                <small class="error">
+                  Ingresa el SKU.
+                </small>
+
+              }
+
+            </div>
+
+
+            <!-- CATEGORÍA -->
+
+            <div class="form-group">
+
+              <label>
+                Categoría
+                <span>*</span>
+              </label>
+
+              <select
+                name="category"
+                [(ngModel)]="product.category"
+                required
+              >
+
+                @for (
+                  category of categories;
+                  track category
+                ) {
+
+                  <option [value]="category">
+                    {{ category }}
+                  </option>
+
+                }
+
+              </select>
+
+            </div>
+
+
+            <!-- PRECIO -->
+
+            <div class="form-group">
+
+              <label>
+                Precio
+                <span>*</span>
+              </label>
+
+              <div class="input-with-prefix">
+
+                <span>
+                  $
+                </span>
+
+                <input
+                  type="number"
+                  name="price"
+                  [(ngModel)]="product.price"
+                  required
+                  min="1"
+                />
+
+              </div>
+
+            </div>
+
+
+            <!-- STOCK -->
+
+            <div class="form-group">
+
+              <label>
+                Stock disponible
+                <span>*</span>
+              </label>
+
+              <div class="input-with-suffix">
+
+                <input
+                  type="number"
+                  name="stock"
+                  [(ngModel)]="product.stock"
+                  required
+                  min="0"
+                />
+
+                <span>
+                  unidades
+                </span>
+
+              </div>
+
+            </div>
+
+
+          </div>
+
+        </section>
+
+
+        <!-- ===================================
+             DESCRIPCIÓN
+        ==================================== -->
+
+        <section class="form-card">
+
+
+          <div class="form-heading">
+
+            <div class="heading-icon purple">
+              ℹ
+            </div>
+
+            <div>
+
+              <h2>
+                Descripción
+              </h2>
+
+              <p>
+                Información que se mostrará en la ficha del producto
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>
+              Descripción del producto
+              <span>*</span>
+            </label>
+
+            <textarea
+              name="description"
+              [(ngModel)]="product.description"
+              required
+              minlength="10"
+              rows="5"
+              placeholder="Describe las características principales del producto..."
+            ></textarea>
+
+          </div>
+
+        </section>
+
+
+        <!-- ===================================
+             ESPECIFICACIONES
+        ==================================== -->
+
+        <section class="form-card">
+
+
+          <div class="form-heading">
+
+            <div class="heading-icon orange">
+              ⚙
+            </div>
+
+            <div>
+
+              <h2>
+                Especificaciones
+              </h2>
+
+              <p>
+                Características técnicas del producto
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div class="form-grid">
+
+
+            <!-- TIPO -->
+
+            <div class="form-group">
+
+              <label>
+                Tipo de producto
+                <span>*</span>
+              </label>
+
+              <input
+                type="text"
+                name="type"
+                [(ngModel)]="product.specifications.type"
+                required
+                placeholder="Ej. Mecánico"
+              />
+
+            </div>
+
+
+            <!-- CONECTIVIDAD -->
+
+            <div class="form-group">
+
+              <label>
+                Conectividad
+                <span>*</span>
+              </label>
+
+              <input
+                type="text"
+                name="connectivity"
+                [(ngModel)]="product.specifications.connectivity"
+                required
+                placeholder="Ej. Bluetooth / Wireless"
+              />
+
+            </div>
+
+
+            <!-- COLOR -->
+
+            <div class="form-group">
+
+              <label>
+                Color
+                <span>*</span>
+              </label>
+
+              <input
+                type="text"
+                name="color"
+                [(ngModel)]="product.specifications.color"
+                required
+                placeholder="Ej. Negro"
+              />
+
+            </div>
+
+
+            <!-- GARANTÍA -->
+
+            <div class="form-group">
+
+              <label>
+                Garantía
+                <span>*</span>
+              </label>
+
+              <input
+                type="text"
+                name="warranty"
+                [(ngModel)]="product.specifications.warranty"
+                required
+                placeholder="Ej. 2 años"
+              />
+
+            </div>
+
+
+          </div>
+
+        </section>
+
+
+        <!-- ===================================
+             IMAGEN
+        ==================================== -->
+
+        <section class="form-card">
+
+
+          <div class="form-heading">
+
+            <div class="heading-icon green">
+              🖼
+            </div>
+
+            <div>
+
+              <h2>
+                Imagen del producto
+              </h2>
+
+              <p>
+                Ruta de la imagen utilizada en el catálogo
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div class="image-editor">
+
+
+            <div class="image-preview">
+
+              <img
+                [src]="product.image"
+                [alt]="product.name"
+              />
+
+            </div>
+
+
+            <div class="image-fields">
+
+              <div class="form-group">
+
+                <label>
+                  Ruta de imagen
+                </label>
+
+                <input
+                  type="text"
+                  name="image"
+                  [(ngModel)]="product.image"
+                  placeholder="/products/imagen.jpg"
+                />
+
+              </div>
+
+
+              <div class="image-help">
+
+                <span>
+                  💡
+                </span>
+
+                <p>
+                  Puedes utilizar una imagen ubicada dentro de
+                  <strong>public/products</strong>.
+                </p>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- ===================================
+             MENSAJE GUARDADO
+        ==================================== -->
+
+        @if (saved) {
+
+          <div class="success-message">
+
+            <span>
+              ✓
+            </span>
+
+            Cambios guardados correctamente.
+            Volviendo al producto...
+
+          </div>
+
+        }
+
+
+        <!-- ===================================
+             ACCIONES
+        ==================================== -->
+
+        <div class="form-actions">
+
+          <button
+            type="button"
+            class="cancel-button"
+            (click)="cancel()"
+          >
+            Cancelar
+          </button>
+
+
+          <button
+            type="submit"
+            class="save-button"
+            [disabled]="saving"
+          >
+
+            @if (saving) {
+
+              <span class="button-spinner"></span>
+
+              Guardando...
+
+            } @else {
+
+              <span>
+                ✓
+              </span>
+
+              Guardar cambios
+
+            }
+
+          </button>
+
+        </div>
+
+
+      </form>
+
+    </div>
+
+  }
+
+</main>

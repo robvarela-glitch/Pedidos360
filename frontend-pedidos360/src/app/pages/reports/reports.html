@@ -1,0 +1,568 @@
+<app-sidebar></app-sidebar>
+
+<main class="reports-page">
+
+  <div class="reports-container">
+
+    <!-- HEADER -->
+
+    <header class="page-header">
+
+      <div class="page-header-info">
+
+        <div class="breadcrumb">
+
+          <span>
+            Análisis
+          </span>
+
+          <span>
+            /
+          </span>
+
+          <strong>
+            Reportes
+          </strong>
+
+        </div>
+
+        <span class="eyebrow">
+          ANÁLISIS Y REPORTES
+        </span>
+
+        <h1>
+          Reportes
+        </h1>
+
+        <p>
+          Analiza el comportamiento de pedidos, ventas y rendimiento operativo.
+        </p>
+
+      </div>
+
+
+      <div class="report-period">
+
+        <span class="period-label">
+          PERÍODO
+        </span>
+
+        <strong>
+          Septiembre 2026
+        </strong>
+
+      </div>
+
+    </header>
+
+
+    <!-- KPI -->
+
+    <section class="summary-grid">
+
+
+      <article class="summary-card">
+
+        <div class="summary-icon blue">
+          $
+        </div>
+
+        <div class="summary-info">
+
+          <span>
+            Ventas totales
+          </span>
+
+          <strong>
+            {{ formatPrice(totalSales) }}
+          </strong>
+
+          <small class="positive">
+            ↑ 12,4% vs. período anterior
+          </small>
+
+        </div>
+
+      </article>
+
+
+      <article class="summary-card">
+
+        <div class="summary-icon purple">
+          #
+        </div>
+
+        <div class="summary-info">
+
+          <span>
+            Total de pedidos
+          </span>
+
+          <strong>
+            {{ totalOrders }}
+          </strong>
+
+          <small class="positive">
+            ↑ 8,7% vs. período anterior
+          </small>
+
+        </div>
+
+      </article>
+
+
+      <article class="summary-card">
+
+        <div class="summary-icon green">
+          ✓
+        </div>
+
+        <div class="summary-info">
+
+          <span>
+            Tasa de entrega
+          </span>
+
+          <strong>
+            {{ deliveryRate }}%
+          </strong>
+
+          <small>
+            pedidos completados
+          </small>
+
+        </div>
+
+      </article>
+
+
+      <article class="summary-card">
+
+        <div class="summary-icon orange">
+          ◷
+        </div>
+
+        <div class="summary-info">
+
+          <span>
+            Preparación promedio
+          </span>
+
+          <strong>
+            {{ averagePreparationTime }} min
+          </strong>
+
+          <small>
+            tiempo operativo
+          </small>
+
+        </div>
+
+      </article>
+
+    </section>
+
+
+    <!-- GRÁFICO DE VENTAS -->
+
+    <section class="sales-card">
+
+      <div class="section-header">
+
+        <div>
+
+          <span class="card-eyebrow">
+            RENDIMIENTO COMERCIAL
+          </span>
+
+          <h2>
+            Evolución de ventas
+          </h2>
+
+          <p>
+            Comparación mensual de los ingresos generados por pedidos.
+          </p>
+
+        </div>
+
+
+        <div class="chart-total">
+
+          <span>
+            Total período
+          </span>
+
+          <strong>
+            {{ formatPrice(totalSales) }}
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <div class="sales-chart">
+
+
+        <div class="chart-y-axis">
+
+          <span>
+            $5M
+          </span>
+
+          <span>
+            $4M
+          </span>
+
+          <span>
+            $3M
+          </span>
+
+          <span>
+            $2M
+          </span>
+
+          <span>
+            $1M
+          </span>
+
+          <span>
+            $0
+          </span>
+
+        </div>
+
+
+        <div class="chart-area">
+
+          <div class="chart-grid-lines">
+
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+
+          </div>
+
+
+          <div class="bars">
+
+            @for (
+              item of salesData;
+              track item.month
+            ) {
+
+              <div class="bar-column">
+
+                <div class="bar-value">
+                  {{ formatPrice(item.value) }}
+                </div>
+
+                <div
+                  class="bar"
+                  [style.height.%]="getBarHeight(item.value)">
+                </div>
+
+                <span class="bar-label">
+                  {{ item.month }}
+                </span>
+
+              </div>
+
+            }
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- SEGUNDA FILA -->
+
+    <div class="analytics-grid">
+
+
+      <!-- ESTADOS -->
+
+      <section class="analytics-card">
+
+        <div class="section-header compact">
+
+          <div>
+
+            <span class="card-eyebrow">
+              PEDIDOS
+            </span>
+
+            <h2>
+              Distribución por estado
+            </h2>
+
+          </div>
+
+          <span class="total-badge">
+            {{ getTotalStatusOrders() }} pedidos
+          </span>
+
+        </div>
+
+
+        <div class="status-list">
+
+          @for (
+            status of orderStatuses;
+            track status.name
+          ) {
+
+            <div class="status-row">
+
+              <div class="status-info">
+
+                <div class="status-name">
+
+                  <span
+                    class="status-indicator"
+                    [class]="getStatusClass(status.className)">
+                  </span>
+
+                  <span>
+                    {{ status.name }}
+                  </span>
+
+                </div>
+
+                <strong>
+                  {{ status.value }}
+                </strong>
+
+              </div>
+
+
+              <div class="progress-track">
+
+                <div
+                  class="progress-bar"
+                  [class]="getStatusClass(status.className)"
+                  [style.width.%]="status.percentage">
+                </div>
+
+              </div>
+
+
+              <span class="percentage">
+                {{ status.percentage }}%
+              </span>
+
+            </div>
+
+          }
+
+        </div>
+
+      </section>
+
+
+      <!-- PRODUCTOS -->
+
+      <section class="analytics-card">
+
+        <div class="section-header compact">
+
+          <div>
+
+            <span class="card-eyebrow">
+              CATÁLOGO
+            </span>
+
+            <h2>
+              Productos destacados
+            </h2>
+
+          </div>
+
+          <span class="total-badge">
+            Top ventas
+          </span>
+
+        </div>
+
+
+        <div class="products-list">
+
+          @for (
+            product of topProducts;
+            track product.name;
+            let i = $index
+          ) {
+
+            <div class="product-row">
+
+
+              <div class="product-rank">
+                {{ getProductRank(i) }}
+              </div>
+
+
+              <div class="product-info">
+
+                <strong>
+                  {{ product.name }}
+                </strong>
+
+                <span>
+                  {{ product.category }}
+                </span>
+
+              </div>
+
+
+              <div class="product-sales">
+
+                <strong>
+                  {{ product.sales }}
+                </strong>
+
+                <span>
+                  ventas
+                </span>
+
+              </div>
+
+
+              <div class="product-revenue">
+
+                <strong>
+                  {{ formatPrice(product.revenue) }}
+                </strong>
+
+                <div class="revenue-track">
+
+                  <div
+                    class="revenue-bar"
+                    [style.width.%]="getRevenuePercentage(product.revenue)">
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          }
+
+        </div>
+
+      </section>
+
+    </div>
+
+
+    <!-- INDICADORES OPERATIVOS -->
+
+    <section class="operational-card">
+
+      <div class="section-header compact">
+
+        <div>
+
+          <span class="card-eyebrow">
+            OPERACIÓN
+          </span>
+
+          <h2>
+            Indicadores operativos
+          </h2>
+
+          <p>
+            Estado actual de los principales procesos de pedidos.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="operational-grid">
+
+        @for (
+          indicator of operationalIndicators;
+          track indicator.label
+        ) {
+
+          <article class="operational-item">
+
+            <div
+              class="operational-icon"
+              [class]="indicator.className">
+
+              @if (indicator.className === 'green') {
+                ✓
+              }
+
+              @if (indicator.className === 'orange') {
+                ◷
+              }
+
+              @if (indicator.className === 'purple') {
+                ↗
+              }
+
+              @if (indicator.className === 'red') {
+                !
+              }
+
+            </div>
+
+
+            <div class="operational-info">
+
+              <span>
+                {{ indicator.label }}
+              </span>
+
+              <strong>
+                {{ indicator.value }}
+              </strong>
+
+              <small>
+                {{ indicator.description }}
+              </small>
+
+            </div>
+
+          </article>
+
+        }
+
+      </div>
+
+    </section>
+
+
+    <!-- FOOTER -->
+
+    <div class="reports-footer">
+
+      <div class="footer-status">
+
+        <span class="online-dot">
+        </span>
+
+        Sistema operativo
+
+      </div>
+
+      <span>
+        Información actualizada · Septiembre 2026
+      </span>
+
+    </div>
+
+  </div>
+
+</main>

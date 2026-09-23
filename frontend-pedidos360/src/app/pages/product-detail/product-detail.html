@@ -1,0 +1,438 @@
+<app-sidebar></app-sidebar>
+
+<main class="detail-page">
+
+
+  @if (loading) {
+
+    <div class="loading-state">
+
+      <div class="loading-spinner"></div>
+
+      <p>
+        Cargando información del producto...
+      </p>
+
+    </div>
+
+  }
+
+
+  @if (!loading && !product) {
+
+    <section class="not-found">
+
+      <div class="not-found-icon">
+        📦
+      </div>
+
+      <h1>
+        Producto no encontrado
+      </h1>
+
+      <p>
+        El producto que estás buscando no existe
+        o ya no está disponible.
+      </p>
+
+      <button
+        class="back-button"
+        (click)="goBack()"
+      >
+        ← Volver al catálogo
+      </button>
+
+    </section>
+
+  }
+
+
+  @if (!loading && product) {
+
+    <div class="page-content">
+
+
+      <!-- BREADCRUMB -->
+
+      <div class="breadcrumb">
+
+        <a routerLink="/catalog">
+          Gestión
+        </a>
+
+        <span>/</span>
+
+        <a routerLink="/catalog">
+          Catálogo
+        </a>
+
+        <span>/</span>
+
+        <strong>
+          {{ product.name }}
+        </strong>
+
+      </div>
+
+
+      <!-- VOLVER -->
+
+      <button
+        class="back-link"
+        (click)="goBack()"
+      >
+        ← Volver al catálogo
+      </button>
+
+
+      <!-- PRODUCTO PRINCIPAL -->
+
+      <section class="product-main">
+
+
+        <!-- IMAGEN -->
+
+        <div
+          class="product-visual"
+
+          [class.notebooks]="
+            product.category === 'Notebooks'
+          "
+
+          [class.monitores]="
+            product.category === 'Monitores'
+          "
+
+          [class.smartphones]="
+            product.category === 'Smartphones'
+          "
+
+          [class.teclados]="
+            product.category === 'Teclados'
+          "
+
+          [class.mouse]="
+            product.category === 'Mouse'
+          "
+
+          [class.audio]="
+            product.category === 'Audio'
+          "
+        >
+
+          <span class="category-label">
+            {{ product.category }}
+          </span>
+
+
+          @if (product.stock <= 5) {
+
+            <span class="stock-label critical">
+
+              <span></span>
+
+              Stock crítico
+
+            </span>
+
+          }
+
+          @else if (product.stock <= 8) {
+
+            <span class="stock-label low">
+
+              <span></span>
+
+              Stock bajo
+
+            </span>
+
+          }
+
+          @else {
+
+            <span class="stock-label">
+
+              <span></span>
+
+              En stock
+
+            </span>
+
+          }
+
+
+          <img
+            [src]="product.image"
+            [alt]="product.name"
+          />
+
+        </div>
+
+
+        <!-- INFORMACIÓN -->
+
+        <div class="product-summary">
+
+
+          <div class="brand">
+            {{ product.brand }}
+          </div>
+
+
+          <h1>
+            {{ product.name }}
+          </h1>
+
+
+          <div class="sku">
+            SKU · {{ product.sku }}
+          </div>
+
+
+          <div class="rating">
+
+            <span class="status-dot"></span>
+
+            <span>
+              Producto activo · Disponible
+            </span>
+
+          </div>
+
+
+          <div class="separator"></div>
+
+
+          <!-- PRECIO -->
+
+          <div class="price-section">
+
+            <span>
+              Precio
+            </span>
+
+            <strong>
+              ${{ product.price | number:'1.0-0' }}
+            </strong>
+
+          </div>
+
+
+          <!-- STOCK -->
+
+          <div class="availability">
+
+            <div class="availability-icon">
+              ✓
+            </div>
+
+            <div>
+
+              <strong>
+                {{ product.stock }} unidades disponibles
+              </strong>
+
+              <span>
+                Stock disponible para despacho
+              </span>
+
+            </div>
+
+          </div>
+
+
+          <!-- ACCIONES -->
+
+          <div class="main-actions">
+
+            <button class="primary-action">
+              Agregar al pedido
+            </button>
+
+
+            <button
+              class="secondary-action"
+
+              [routerLink]="[
+                '/catalog',
+                product.id,
+                'edit'
+              ]"
+            >
+              ✎ Editar producto
+            </button>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- DESCRIPCIÓN -->
+
+      <section class="information-card">
+
+        <div class="section-heading">
+
+          <div class="heading-icon blue">
+            ℹ
+          </div>
+
+          <div>
+
+            <h2>
+              Descripción
+            </h2>
+
+            <p>
+              Información general del producto
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="description">
+
+          <p>
+            {{ product.description }}
+          </p>
+
+        </div>
+
+      </section>
+
+
+      <!-- ESPECIFICACIONES -->
+
+      <section class="information-card">
+
+        <div class="section-heading">
+
+          <div class="heading-icon purple">
+            ⚙
+          </div>
+
+          <div>
+
+            <h2>
+              Especificaciones
+            </h2>
+
+            <p>
+              Características técnicas del producto
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="specifications-grid">
+
+
+          <div class="specification">
+
+            <span>
+              Tipo de producto
+            </span>
+
+            <strong>
+              {{ product.specifications.type }}
+            </strong>
+
+          </div>
+
+
+          <div class="specification">
+
+            <span>
+              Conectividad
+            </span>
+
+            <strong>
+              {{ product.specifications.connectivity }}
+            </strong>
+
+          </div>
+
+
+          <div class="specification">
+
+            <span>
+              Color
+            </span>
+
+            <strong>
+              {{ product.specifications.color }}
+            </strong>
+
+          </div>
+
+
+          <div class="specification">
+
+            <span>
+              Garantía
+            </span>
+
+            <strong>
+              {{ product.specifications.warranty }}
+            </strong>
+
+          </div>
+
+
+        </div>
+
+      </section>
+
+
+      <!-- INVENTARIO -->
+
+      <section class="inventory-card">
+
+        <div class="inventory-left">
+
+          <div class="inventory-icon">
+            📦
+          </div>
+
+          <div>
+
+            <h3>
+              Inventario
+            </h3>
+
+            <p>
+              Stock actual registrado en el catálogo
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="inventory-value">
+
+          <strong>
+            {{ product.stock }}
+          </strong>
+
+          <span>
+            unidades
+          </span>
+
+        </div>
+
+      </section>
+
+
+    </div>
+
+  }
+
+</main>

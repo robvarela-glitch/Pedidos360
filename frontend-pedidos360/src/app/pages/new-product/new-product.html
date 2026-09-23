@@ -1,0 +1,587 @@
+<app-sidebar></app-sidebar>
+
+<main class="new-product-page">
+
+  <div class="new-product-container">
+
+    <div class="breadcrumb">
+
+      <a routerLink="/catalog">
+        Gestión
+      </a>
+
+      <span>/</span>
+
+      <a routerLink="/catalog">
+        Catálogo
+      </a>
+
+      <span>/</span>
+
+      <strong>
+        Nuevo producto
+      </strong>
+
+    </div>
+
+
+    <section class="page-header">
+
+      <div>
+
+        <span class="eyebrow">
+          INVENTARIO
+        </span>
+
+        <h1>
+          Nuevo producto
+        </h1>
+
+        <p>
+          Agrega un nuevo producto al catálogo de Pedidos360.
+        </p>
+
+      </div>
+
+
+      <a
+        routerLink="/catalog"
+        class="back-button">
+
+        ← Volver al catálogo
+
+      </a>
+
+    </section>
+
+
+    <form
+      #productForm="ngForm"
+      (ngSubmit)="createProduct(productForm)"
+      class="product-form">
+
+
+      <!-- INFORMACIÓN GENERAL -->
+
+      <section class="form-card">
+
+        <div class="form-card-header">
+
+          <div class="section-icon blue">
+            ▣
+          </div>
+
+          <div>
+
+            <h2>
+              Información general
+            </h2>
+
+            <p>
+              Información principal del producto.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="form-grid">
+
+
+          <div class="form-field">
+
+            <label for="name">
+              Nombre del producto
+              <span>*</span>
+            </label>
+
+            <input
+              id="name"
+              name="name"
+              type="text"
+              placeholder="Ej: Logitech G915"
+              [(ngModel)]="product.name"
+              required
+              #name="ngModel"
+            />
+
+            @if (name.invalid && name.touched) {
+
+              <small class="error">
+                El nombre es obligatorio.
+              </small>
+
+            }
+
+          </div>
+
+
+          <div class="form-field">
+
+            <label for="brand">
+              Marca
+              <span>*</span>
+            </label>
+
+            <input
+              id="brand"
+              name="brand"
+              type="text"
+              placeholder="Ej: Logitech"
+              [(ngModel)]="product.brand"
+              required
+              #brand="ngModel"
+            />
+
+            @if (brand.invalid && brand.touched) {
+
+              <small class="error">
+                La marca es obligatoria.
+              </small>
+
+            }
+
+          </div>
+
+
+          <div class="form-field">
+
+            <label for="sku">
+              SKU
+              <span>*</span>
+            </label>
+
+            <input
+              id="sku"
+              name="sku"
+              type="text"
+              placeholder="Ej: TEC-008"
+              [(ngModel)]="product.sku"
+              required
+              #sku="ngModel"
+            />
+
+            @if (sku.invalid && sku.touched) {
+
+              <small class="error">
+                El SKU es obligatorio.
+              </small>
+
+            }
+
+          </div>
+
+
+          <div class="form-field">
+
+            <label for="category">
+              Categoría
+              <span>*</span>
+            </label>
+
+            <select
+              id="category"
+              name="category"
+              [(ngModel)]="product.category"
+              required
+              #category="ngModel">
+
+              <option
+                value=""
+                disabled>
+
+                Selecciona una categoría
+
+              </option>
+
+              @for (
+                item of categories;
+                track item
+              ) {
+
+                <option [value]="item">
+                  {{ item }}
+                </option>
+
+              }
+
+            </select>
+
+            @if (
+              category.invalid &&
+              category.touched
+            ) {
+
+              <small class="error">
+                Selecciona una categoría.
+              </small>
+
+            }
+
+          </div>
+
+
+          <div class="form-field">
+
+            <label for="price">
+              Precio
+              <span>*</span>
+            </label>
+
+            <div class="money-input">
+
+              <span>
+                $
+              </span>
+
+              <input
+                id="price"
+                name="price"
+                type="number"
+                min="1"
+                placeholder="159990"
+                [(ngModel)]="product.price"
+                required
+                #price="ngModel"
+              />
+
+            </div>
+
+            <small class="field-help">
+              Precio expresado en pesos chilenos (CLP).
+            </small>
+
+          </div>
+
+
+          <div class="form-field">
+
+            <label for="stock">
+              Stock inicial
+              <span>*</span>
+            </label>
+
+            <input
+              id="stock"
+              name="stock"
+              type="number"
+              min="0"
+              placeholder="10"
+              [(ngModel)]="product.stock"
+              required
+              #stock="ngModel"
+            />
+
+            <small class="field-help">
+              Cantidad disponible inicialmente.
+            </small>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- DESCRIPCIÓN -->
+
+      <section class="form-card">
+
+        <div class="form-card-header">
+
+          <div class="section-icon green">
+            ≡
+          </div>
+
+          <div>
+
+            <h2>
+              Descripción
+            </h2>
+
+            <p>
+              Describe las principales características del producto.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="form-field">
+
+          <label for="description">
+            Descripción del producto
+            <span>*</span>
+          </label>
+
+          <textarea
+            id="description"
+            name="description"
+            rows="5"
+            placeholder="Escribe una descripción clara del producto..."
+            [(ngModel)]="product.description"
+            required
+            #description="ngModel">
+          </textarea>
+
+          @if (
+            description.invalid &&
+            description.touched
+          ) {
+
+            <small class="error">
+              La descripción es obligatoria.
+            </small>
+
+          }
+
+        </div>
+
+      </section>
+
+
+      <!-- ESPECIFICACIONES -->
+
+      <section class="form-card">
+
+        <div class="form-card-header">
+
+          <div class="section-icon purple">
+            ⚙
+          </div>
+
+          <div>
+
+            <h2>
+              Especificaciones
+            </h2>
+
+            <p>
+              Define las características técnicas del producto.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="form-grid">
+
+
+          <div class="form-field">
+
+            <label for="type">
+              Tipo
+            </label>
+
+            <input
+              id="type"
+              name="type"
+              type="text"
+              placeholder="Ej: Mecánico"
+              [(ngModel)]="product.specifications.type"
+            />
+
+          </div>
+
+
+          <div class="form-field">
+
+            <label for="connectivity">
+              Conectividad
+            </label>
+
+            <input
+              id="connectivity"
+              name="connectivity"
+              type="text"
+              placeholder="Ej: Bluetooth / Wireless"
+              [(ngModel)]="product.specifications.connectivity"
+            />
+
+          </div>
+
+
+          <div class="form-field">
+
+            <label for="color">
+              Color
+            </label>
+
+            <input
+              id="color"
+              name="color"
+              type="text"
+              placeholder="Ej: Negro"
+              [(ngModel)]="product.specifications.color"
+            />
+
+          </div>
+
+
+          <div class="form-field">
+
+            <label for="warranty">
+              Garantía
+            </label>
+
+            <input
+              id="warranty"
+              name="warranty"
+              type="text"
+              placeholder="Ej: 2 años"
+              [(ngModel)]="product.specifications.warranty"
+            />
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- IMAGEN -->
+
+      <section class="form-card">
+
+        <div class="form-card-header">
+
+          <div class="section-icon orange">
+            ▧
+          </div>
+
+          <div>
+
+            <h2>
+              Imagen del producto
+            </h2>
+
+            <p>
+              Indica la ruta de la imagen que utilizará el catálogo.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="form-field">
+
+          <label for="image">
+            Ruta de imagen
+          </label>
+
+          <input
+            id="image"
+            name="image"
+            type="text"
+            placeholder="/products/nombre-imagen.jpg"
+            [(ngModel)]="product.image"
+          />
+
+          <small class="field-help">
+            Ejemplo: /products/logitech-g915.webp
+          </small>
+
+        </div>
+
+
+        @if (product.image) {
+
+          <div class="image-preview">
+
+            <span>
+              Vista previa
+            </span>
+
+            <div class="preview-box">
+
+              <img
+                [src]="product.image"
+                [alt]="product.name || 'Vista previa'"
+              />
+
+            </div>
+
+          </div>
+
+        }
+
+      </section>
+
+
+      <!-- ÉXITO -->
+
+      @if (saved) {
+
+        <div class="success-message">
+
+          <span class="success-icon">
+            ✓
+          </span>
+
+          <div>
+
+            <strong>
+              Producto creado correctamente
+            </strong>
+
+            <p>
+              El producto fue agregado al catálogo.
+            </p>
+
+          </div>
+
+        </div>
+
+      }
+
+
+      <!-- BOTONES -->
+
+      <div class="form-actions">
+
+        <a
+          routerLink="/catalog"
+          class="cancel-button">
+
+          Cancelar
+
+        </a>
+
+
+        <button
+          type="submit"
+          class="save-button"
+          [disabled]="saving">
+
+          @if (saving) {
+
+            <span>
+              Guardando...
+            </span>
+
+          } @else {
+
+            <span class="save-icon">
+              ✓
+            </span>
+
+            <span>
+              Crear producto
+            </span>
+
+          }
+
+        </button>
+
+      </div>
+
+
+    </form>
+
+  </div>
+
+</main>

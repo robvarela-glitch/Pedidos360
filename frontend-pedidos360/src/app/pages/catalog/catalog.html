@@ -1,0 +1,428 @@
+<app-sidebar></app-sidebar>
+
+<main class="catalog-page">
+
+  <div class="catalog-container">
+
+    <!-- BREADCRUMB -->
+    <div class="breadcrumb">
+
+      <span>
+        Gestión
+      </span>
+
+      <span>
+        /
+      </span>
+
+      <strong>
+        Catálogo
+      </strong>
+
+    </div>
+
+
+    <!-- HEADER -->
+    <section class="page-header">
+
+      <div class="page-header-info">
+
+        <span class="eyebrow">
+          INVENTARIO
+        </span>
+
+        <h1>
+          Catálogo
+        </h1>
+
+        <p>
+          Administra productos, precios y disponibilidad de tu catálogo.
+        </p>
+
+      </div>
+
+
+      <a
+        routerLink="/catalog/new"
+        class="new-product-button">
+
+        <span class="plus-icon">
+          +
+        </span>
+
+        Nuevo producto
+
+      </a>
+
+    </section>
+
+
+    <!-- BUSCADOR -->
+    <section class="filters-card">
+
+      <div class="filter-title">
+
+        <h2>
+          Buscar productos
+        </h2>
+
+        <p>
+          Filtra por nombre, marca, SKU o categoría.
+        </p>
+
+      </div>
+
+
+      <div class="filters-row">
+
+        <div class="search-field">
+
+          <label>
+            Buscar
+          </label>
+
+          <div class="search-input">
+
+            <span class="search-icon">
+              ⌕
+            </span>
+
+            <input
+              type="text"
+              placeholder="Nombre, marca o SKU..."
+              [value]="searchText"
+              (input)="onSearch($event)"
+            />
+
+          </div>
+
+        </div>
+
+
+        <div class="category-field">
+
+          <label>
+            Categoría
+          </label>
+
+          <select
+            [value]="selectedCategory"
+            (change)="onCategoryChange($event)">
+
+            <option value="">
+              Todas las categorías
+            </option>
+
+            @for (
+              category of categories;
+              track category
+            ) {
+
+              <option [value]="category">
+                {{ category }}
+              </option>
+
+            }
+
+          </select>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ESTADÍSTICAS -->
+    <section class="summary-grid">
+
+      <div class="summary-card">
+
+        <div class="summary-icon blue">
+          ▣
+        </div>
+
+        <div class="summary-info">
+
+          <span>
+            Productos
+          </span>
+
+          <strong>
+            {{ products.length }}
+          </strong>
+
+          <small>
+            en catálogo
+          </small>
+
+        </div>
+
+      </div>
+
+
+      <div class="summary-card">
+
+        <div class="summary-icon green">
+          ✓
+        </div>
+
+        <div class="summary-info">
+
+          <span>
+            Disponibles
+          </span>
+
+          <strong>
+            {{ products.length }}
+          </strong>
+
+          <small>
+            productos en stock
+          </small>
+
+        </div>
+
+      </div>
+
+
+      <div class="summary-card">
+
+        <div class="summary-icon orange">
+          ◇
+        </div>
+
+        <div class="summary-info">
+
+          <span>
+            Categorías
+          </span>
+
+          <strong>
+            {{ categories.length }}
+          </strong>
+
+          <small>
+            categorías activas
+          </small>
+
+        </div>
+
+      </div>
+
+
+      <div class="summary-card">
+
+        <div class="summary-icon purple">
+          ▥
+        </div>
+
+        <div class="summary-info">
+
+          <span>
+            Stock total
+          </span>
+
+          <strong>
+            {{ getTotalStock() }}
+          </strong>
+
+          <small>
+            unidades
+          </small>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- PRODUCTOS -->
+    <section class="products-section">
+
+      <div class="products-header">
+
+        <div>
+
+          <h2>
+            Productos
+          </h2>
+
+          <p>
+            {{ filteredProducts.length }} productos encontrados
+          </p>
+
+        </div>
+
+
+        <div class="sort-box">
+
+          <span>
+            Ordenar por
+          </span>
+
+          <select>
+
+            <option>
+              Nombre (A-Z)
+            </option>
+
+            <option>
+              Precio menor
+            </option>
+
+            <option>
+              Precio mayor
+            </option>
+
+            <option>
+              Stock
+            </option>
+
+          </select>
+
+        </div>
+
+      </div>
+
+
+      @if (filteredProducts.length > 0) {
+
+        <div class="products-grid">
+
+          @for (
+            product of filteredProducts;
+            track product.id
+          ) {
+
+            <article class="product-card">
+
+
+              <!-- IMAGEN -->
+              <div class="product-image-container">
+
+                <span
+                  class="category-badge"
+                  [class.notebook]="product.category === 'Notebooks'"
+                  [class.monitor]="product.category === 'Monitores'"
+                  [class.smartphone]="product.category === 'Smartphones'"
+                  [class.keyboard]="product.category === 'Teclados'"
+                  [class.audio]="product.category === 'Audio'"
+                  [class.mouse]="product.category === 'Mouse'">
+
+                  {{ product.category }}
+
+                </span>
+
+
+                <button
+                  type="button"
+                  class="favorite-button"
+                  title="Agregar a favoritos">
+
+                  ♡
+
+                </button>
+
+
+                <img
+                  class="product-image"
+                  [src]="product.image"
+                  [alt]="product.name"
+                />
+
+              </div>
+
+
+              <!-- INFORMACIÓN -->
+              <div class="product-content">
+
+                <span class="product-brand">
+                  {{ product.brand }}
+                </span>
+
+
+                <h3>
+                  {{ product.name }}
+                </h3>
+
+
+                <p class="sku">
+                  SKU: {{ product.sku }}
+                </p>
+
+
+                <div class="product-price-row">
+
+                  <strong class="product-price">
+
+                    {{ formatPrice(product.price) }}
+
+                  </strong>
+
+
+                  <span
+                    class="stock-badge"
+                    [class.low-stock]="product.stock <= 5">
+
+                    {{ product.stock }} unidades
+
+                  </span>
+
+                </div>
+
+
+                <a
+                  class="details-button"
+                  [routerLink]="[
+                    '/catalog',
+                    product.id
+                  ]">
+
+                  <span>
+                    Ver detalles
+                  </span>
+
+                  <span class="arrow">
+                    →
+                  </span>
+
+                </a>
+
+              </div>
+
+            </article>
+
+          }
+
+        </div>
+
+      }
+
+
+      @if (filteredProducts.length === 0) {
+
+        <div class="empty-state">
+
+          <div class="empty-icon">
+            ⌕
+          </div>
+
+          <h3>
+            No encontramos productos
+          </h3>
+
+          <p>
+            Prueba con otro nombre, marca, SKU o categoría.
+          </p>
+
+        </div>
+
+      }
+
+    </section>
+
+  </div>
+
+</main>

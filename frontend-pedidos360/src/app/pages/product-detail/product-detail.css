@@ -1,0 +1,929 @@
+:host {
+  display: block;
+
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+  color: #172033;
+}
+
+
+/* =====================================================
+   PÁGINA
+===================================================== */
+
+.detail-page {
+  margin-left: 240px;
+
+  min-height: 100vh;
+
+  padding: 30px 36px 60px;
+
+  box-sizing: border-box;
+
+  background:
+    linear-gradient(
+      135deg,
+      #eef3f8 0%,
+      #f7f9fc 55%,
+      #edf3ff 100%
+    );
+}
+
+
+/* =====================================================
+   CONTENIDO
+===================================================== */
+
+.page-content {
+  max-width: 1400px;
+
+  margin: 0 auto;
+}
+
+
+/* =====================================================
+   BREADCRUMB
+===================================================== */
+
+.breadcrumb {
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  margin-bottom: 14px;
+
+  font-size: 11px;
+
+  color: #7b8797;
+}
+
+.breadcrumb a {
+  color: #64748b;
+
+  text-decoration: none;
+}
+
+.breadcrumb a:hover {
+  color: #2563eb;
+}
+
+.breadcrumb span {
+  color: #b0bac7;
+}
+
+.breadcrumb strong {
+  color: #475569;
+
+  font-weight: 600;
+}
+
+
+/* =====================================================
+   VOLVER
+===================================================== */
+
+.back-link {
+  padding: 0;
+
+  margin-bottom: 18px;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #2563eb;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+
+/* =====================================================
+   PRODUCTO PRINCIPAL
+===================================================== */
+
+.product-main {
+  display: grid;
+
+  grid-template-columns:
+    minmax(400px, 1fr)
+    minmax(400px, 1fr);
+
+  gap: 24px;
+
+  margin-bottom: 22px;
+}
+
+
+/* =====================================================
+   VISUAL
+===================================================== */
+
+.product-visual {
+  min-height: 470px;
+
+  position: relative;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  overflow: hidden;
+
+  border: 1px solid #d2dce8;
+
+  border-radius: 18px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #edf2f7,
+      #f8fafc
+    );
+
+  box-shadow:
+    0 8px 22px rgba(15, 23, 42, 0.06);
+}
+
+.product-visual.notebooks {
+  background:
+    linear-gradient(
+      145deg,
+      #e5efff,
+      #f5f8fc
+    );
+}
+
+.product-visual.monitores {
+  background:
+    linear-gradient(
+      145deg,
+      #eee8ff,
+      #f8f6ff
+    );
+}
+
+.product-visual.smartphones {
+  background:
+    linear-gradient(
+      145deg,
+      #e6f8ef,
+      #f6fbf8
+    );
+}
+
+.product-visual.teclados {
+  background:
+    linear-gradient(
+      145deg,
+      #fff0df,
+      #fff9f3
+    );
+}
+
+.product-visual.mouse {
+  background:
+    linear-gradient(
+      145deg,
+      #e4f6fa,
+      #f5fcfd
+    );
+}
+
+.product-visual.audio {
+  background:
+    linear-gradient(
+      145deg,
+      #fce8e8,
+      #fff7f7
+    );
+}
+
+
+/* FOTO */
+
+.product-visual img {
+  width: 72%;
+
+  height: 72%;
+
+  object-fit: contain;
+
+  transition:
+    transform 0.3s ease;
+}
+
+.product-visual:hover img {
+  transform: scale(1.035);
+}
+
+
+/* =====================================================
+   CATEGORÍA
+===================================================== */
+
+.category-label {
+  position: absolute;
+
+  top: 17px;
+
+  left: 17px;
+
+  padding: 7px 11px;
+
+  border-radius: 8px;
+
+  background: #dbeafe;
+
+  border: 1px solid #bfdbfe;
+
+  color: #1d4ed8;
+
+  font-size: 10px;
+
+  font-weight: 800;
+}
+
+
+/* =====================================================
+   STOCK
+===================================================== */
+
+.stock-label {
+  position: absolute;
+
+  top: 17px;
+
+  right: 17px;
+
+  display: flex;
+
+  align-items: center;
+
+  padding: 7px 11px;
+
+  border-radius: 8px;
+
+  background: #dcfce7;
+
+  border: 1px solid #bbf7d0;
+
+  color: #15803d;
+
+  font-size: 10px;
+
+  font-weight: 750;
+}
+
+.stock-label span {
+  width: 7px;
+  height: 7px;
+
+  margin-right: 5px;
+
+  border-radius: 50%;
+
+  background: #22c55e;
+}
+
+.stock-label.low {
+  background: #ffedd5;
+
+  border-color: #fed7aa;
+
+  color: #c2410c;
+}
+
+.stock-label.low span {
+  background: #f59e0b;
+}
+
+.stock-label.critical {
+  background: #fee2e2;
+
+  border-color: #fecaca;
+
+  color: #b91c1c;
+}
+
+.stock-label.critical span {
+  background: #ef4444;
+}
+
+
+/* =====================================================
+   RESUMEN
+===================================================== */
+
+.product-summary {
+  padding: 26px 28px;
+
+  background: #ffffff;
+
+  border: 1px solid #d2dce8;
+
+  border-radius: 18px;
+
+  box-shadow:
+    0 8px 22px rgba(15, 23, 42, 0.06);
+}
+
+.brand {
+  color: #2563eb;
+
+  font-size: 11px;
+
+  font-weight: 850;
+
+  letter-spacing: 1px;
+
+  text-transform: uppercase;
+
+  margin-bottom: 8px;
+}
+
+.product-summary h1 {
+  margin: 0;
+
+  color: #111827;
+
+  font-size: 29px;
+
+  font-weight: 800;
+
+  letter-spacing: -0.7px;
+}
+
+.sku {
+  margin-top: 7px;
+
+  color: #94a3b8;
+
+  font-size: 11px;
+}
+
+
+/* =====================================================
+   RATING
+===================================================== */
+
+.rating {
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+
+  margin-top: 17px;
+
+  color: #7c899b;
+
+  font-size: 10px;
+}
+
+.stars {
+  color: #f59e0b;
+
+  font-size: 14px;
+
+  letter-spacing: 1px;
+}
+
+
+/* =====================================================
+   SEPARADOR
+===================================================== */
+
+.separator {
+  height: 1px;
+
+  margin: 19px 0;
+
+  background: #e3e8ee;
+}
+
+
+/* =====================================================
+   PRECIO
+===================================================== */
+
+.price-section {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 4px;
+}
+
+.price-section span {
+  color: #94a3b8;
+
+  font-size: 10px;
+}
+
+.price-section strong {
+  color: #111827;
+
+  font-size: 30px;
+
+  font-weight: 820;
+}
+
+
+/* =====================================================
+   DISPONIBILIDAD
+===================================================== */
+
+.availability {
+  display: flex;
+
+  align-items: center;
+
+  gap: 11px;
+
+  margin-top: 19px;
+
+  padding: 13px;
+
+  border-radius: 10px;
+
+  background: #f0fdf4;
+
+  border: 1px solid #d4f3df;
+}
+
+.availability-icon {
+  width: 32px;
+  height: 32px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #dcfce7;
+
+  color: #15803d;
+
+  font-weight: 800;
+}
+
+.availability strong {
+  display: block;
+
+  color: #166534;
+
+  font-size: 11px;
+}
+
+.availability span {
+  display: block;
+
+  margin-top: 3px;
+
+  color: #65a37b;
+
+  font-size: 9px;
+}
+
+
+/* =====================================================
+   ACCIONES
+===================================================== */
+
+.main-actions {
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 10px;
+
+  margin-top: 20px;
+}
+
+.primary-action,
+.secondary-action {
+  height: 43px;
+
+  border-radius: 9px;
+
+  font-size: 11px;
+
+  font-weight: 750;
+
+  cursor: pointer;
+
+  transition:
+    all 0.2s ease;
+}
+
+.primary-action {
+  border: 1px solid #2563eb;
+
+  background: #2563eb;
+
+  color: white;
+
+  box-shadow:
+    0 6px 14px rgba(37, 99, 235, 0.18);
+}
+
+.primary-action:hover {
+  background: #1d4ed8;
+
+  transform: translateY(-1px);
+}
+
+.secondary-action {
+  border: 1px solid #d3dce7;
+
+  background: #ffffff;
+
+  color: #475569;
+}
+
+.secondary-action:hover {
+  background: #f8fafc;
+
+  border-color: #b7c5d6;
+
+  color: #2563eb;
+}
+
+
+/* =====================================================
+   TARJETAS DE INFORMACIÓN
+===================================================== */
+
+.information-card {
+  margin-bottom: 20px;
+
+  padding: 23px 25px;
+
+  background: #ffffff;
+
+  border: 1px solid #d2dce8;
+
+  border-radius: 15px;
+
+  box-shadow:
+    0 5px 14px rgba(15, 23, 42, 0.045);
+}
+
+
+/* =====================================================
+   TÍTULO SECCIÓN
+===================================================== */
+
+.section-heading {
+  display: flex;
+
+  align-items: center;
+
+  gap: 11px;
+
+  padding-bottom: 17px;
+
+  margin-bottom: 18px;
+
+  border-bottom: 1px solid #e4e9ef;
+}
+
+.heading-icon {
+  width: 36px;
+  height: 36px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 9px;
+
+  font-size: 15px;
+}
+
+.heading-icon.blue {
+  background: #e8f0ff;
+
+  color: #2563eb;
+}
+
+.heading-icon.purple {
+  background: #f1edff;
+
+  color: #7c3aed;
+}
+
+.section-heading h2 {
+  margin: 0;
+
+  color: #172033;
+
+  font-size: 15px;
+
+  font-weight: 760;
+}
+
+.section-heading p {
+  margin: 3px 0 0;
+
+  color: #94a3b8;
+
+  font-size: 10px;
+}
+
+
+/* =====================================================
+   DESCRIPCIÓN
+===================================================== */
+
+.description p {
+  margin: 0;
+
+  color: #59677a;
+
+  font-size: 12px;
+
+  line-height: 1.8;
+}
+
+
+/* =====================================================
+   ESPECIFICACIONES
+===================================================== */
+
+.specifications-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, 1fr);
+
+  gap: 11px;
+}
+
+.specification {
+  padding: 14px;
+
+  border: 1px solid #e0e6ed;
+
+  border-radius: 9px;
+
+  background: #f8fafc;
+}
+
+.specification span {
+  display: block;
+
+  margin-bottom: 6px;
+
+  color: #94a3b8;
+
+  font-size: 9px;
+}
+
+.specification strong {
+  color: #334155;
+
+  font-size: 11px;
+
+  font-weight: 700;
+}
+
+
+/* =====================================================
+   INVENTARIO
+===================================================== */
+
+.inventory-card {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  padding: 17px 20px;
+
+  background: #ffffff;
+
+  border: 1px solid #d2dce8;
+
+  border-radius: 14px;
+
+  box-shadow:
+    0 5px 14px rgba(15, 23, 42, 0.045);
+}
+
+.inventory-left {
+  display: flex;
+
+  align-items: center;
+
+  gap: 11px;
+}
+
+.inventory-icon {
+  width: 39px;
+  height: 39px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 9px;
+
+  background: #eff6ff;
+
+  font-size: 16px;
+}
+
+.inventory-left h3 {
+  margin: 0;
+
+  color: #172033;
+
+  font-size: 12px;
+}
+
+.inventory-left p {
+  margin: 3px 0 0;
+
+  color: #94a3b8;
+
+  font-size: 9px;
+}
+
+.inventory-value {
+  text-align: right;
+}
+
+.inventory-value strong {
+  color: #059669;
+
+  font-size: 23px;
+
+  font-weight: 800;
+}
+
+.inventory-value span {
+  margin-left: 5px;
+
+  color: #64748b;
+
+  font-size: 10px;
+}
+
+
+/* =====================================================
+   LOADING
+===================================================== */
+
+.loading-state {
+  min-height: 70vh;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+}
+
+.loading-spinner {
+  width: 30px;
+  height: 30px;
+
+  border: 3px solid #dbe5f0;
+
+  border-top-color: #2563eb;
+
+  border-radius: 50%;
+
+  animation:
+    spin 0.8s linear infinite;
+}
+
+.loading-state p {
+  margin-top: 12px;
+
+  color: #64748b;
+
+  font-size: 12px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* =====================================================
+   NO ENCONTRADO
+===================================================== */
+
+.not-found {
+  min-height: 70vh;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  text-align: center;
+}
+
+.not-found-icon {
+  font-size: 45px;
+
+  margin-bottom: 12px;
+}
+
+.not-found h1 {
+  margin: 0;
+
+  font-size: 22px;
+}
+
+.not-found p {
+  margin: 7px 0 18px;
+
+  color: #7c899b;
+
+  font-size: 12px;
+}
+
+.back-button {
+  height: 40px;
+
+  padding: 0 16px;
+
+  border: 0;
+
+  border-radius: 8px;
+
+  background: #2563eb;
+
+  color: white;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media (max-width: 1000px) {
+
+  .detail-page {
+    margin-left: 0;
+
+    padding: 25px 20px;
+  }
+
+  .product-main {
+    grid-template-columns: 1fr;
+  }
+
+}
+
+
+@media (max-width: 650px) {
+
+  .main-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .specifications-grid {
+    grid-template-columns: 1fr;
+  }
+
+}
