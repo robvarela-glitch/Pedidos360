@@ -194,37 +194,64 @@
   <!-- FOOTER -->
   <div class="sidebar-footer">
 
-    <div class="system-status">
+  <div class="system-status">
 
-      <span class="status-indicator"></span>
+    <span class="status-indicator"></span>
 
-      <div>
-
-        <strong>
-          Sistema operativo
-        </strong>
-
-        <small>
-          Todos los servicios activos
-        </small>
-
-      </div>
-
-    </div>
-
-
-    <div class="footer-brand">
+    <div>
 
       <strong>
-        Pedidos360
+        Sistema operativo
       </strong>
 
-      <span>
-        Gestión empresarial
-      </span>
+      <small>
+        Todos los servicios activos
+      </small>
 
     </div>
 
   </div>
+
+
+  <div class="footer-brand">
+
+    <strong>
+      Pedidos360
+    </strong>
+
+    <span>
+      Gestión empresarial
+    </span>
+
+  </div>
+
+
+  <!-- CERRAR SESIÓN -->
+  <button
+    type="button"
+    class="logout-button"
+    (click)="cerrarSesion()">
+
+    <span class="logout-icon">
+      <svg
+        viewBox="0 0 24 24"
+        aria-hidden="true">
+
+        <path d="M10 17l5-5-5-5"></path>
+
+        <path d="M15 12H3"></path>
+
+        <path d="M21 3v18"></path>
+
+      </svg>
+    </span>
+
+    <span class="nav-label">
+      Cerrar sesión
+    </span>
+
+  </button>
+
+</div>
 
 </aside>

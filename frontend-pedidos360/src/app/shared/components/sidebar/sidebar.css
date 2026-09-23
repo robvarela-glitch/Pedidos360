@@ -2,13 +2,14 @@
   display: block;
 }
 
+/* ================================
+   SIDEBAR
+================================ */
 
 .sidebar {
   position: fixed;
-
   top: 0;
   left: 0;
-
   z-index: 1000;
 
   width: 240px;
@@ -21,12 +22,11 @@
 
   padding: 22px 14px 16px;
 
-  background:
-    linear-gradient(
-      180deg,
-      #111827 0%,
-      #0f172a 100%
-    );
+  background: linear-gradient(
+    180deg,
+    #111827 0%,
+    #0f172a 100%
+  );
 
   color: white;
 
@@ -126,7 +126,6 @@
 
 .brand-text h1 span {
   color: #60a5fa;
-
   font-weight: 400;
 }
 
@@ -223,12 +222,11 @@
 
 
 .nav-item.active {
-  background:
-    linear-gradient(
-      90deg,
-      #2563eb 0%,
-      #1d5bd4 100%
-    );
+  background: linear-gradient(
+    90deg,
+    #2563eb 0%,
+    #1d5bd4 100%
+  );
 
   color: white;
 
@@ -243,7 +241,6 @@
   position: absolute;
 
   left: -14px;
-
   top: 9px;
 
   width: 3px;
@@ -291,6 +288,103 @@
 
 .nav-label {
   white-space: nowrap;
+}
+
+
+/* ================================
+   CERRAR SESIÓN
+================================ */
+
+.logout-button {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  min-height: 43px;
+
+  padding: 0 11px;
+
+  margin: 0;
+
+  box-sizing: border-box;
+
+  border: none;
+
+  border-radius: 8px;
+
+  background: transparent;
+
+  color: #aeb9c9;
+
+  font-family: inherit;
+
+  font-size: 12px;
+
+  font-weight: 550;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  appearance: none;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+
+.logout-button:hover {
+  background: #2a1d1d;
+
+  color: #f87171;
+
+  transform: translateX(2px);
+}
+
+
+.logout-button:focus-visible {
+  outline: 2px solid #60a5fa;
+
+  outline-offset: 2px;
+}
+
+
+.logout-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex: 0 0 20px;
+
+  width: 20px;
+  height: 20px;
+}
+
+
+.logout-icon svg {
+  width: 17px;
+  height: 17px;
+
+  fill: none;
+
+  stroke: currentColor;
+
+  stroke-width: 1.7;
+
+  stroke-linecap: round;
+  stroke-linejoin: round;
+
+  opacity: 0.9;
+}
+
+
+.logout-button:hover .logout-icon svg {
+  opacity: 1;
 }
 
 
@@ -403,11 +497,13 @@
     position: relative;
 
     width: 100%;
+
     height: auto;
 
     min-height: auto;
 
     border-right: 0;
+
     border-bottom: 1px solid #1e293b;
   }
 
@@ -431,4 +527,8 @@
     display: none;
   }
 
+
+  .logout-button {
+    margin-top: 5px;
+  }
 }

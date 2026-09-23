@@ -1,109 +1,110 @@
-import {
-  ApplicationConfig,
-  provideBrowserGlobalErrorListeners
-} from '@angular/core';
-
-import {
-  HTTP_INTERCEPTORS,
-  provideHttpClient,
-  withInterceptorsFromDi
-} from '@angular/common/http';
-
+import { ApplicationConfig, provideZonelessChangeDetection, provideAppInitializer, inject } from '@angular/core';
 import { provideRouter } from '@angular/router';
+import { provideHttpClient, withInterceptorsFromDi, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { routes } from './app.routes';
 
 import {
-  IPublicClientApplication,
-  PublicClientApplication,
-  InteractionType
+    IPublicClientApplication,
+    PublicClientApplication,
+    InteractionType,
+    BrowserCacheLocation
 } from '@azure/msal-browser';
 
 import {
-  MsalGuard,
-  MsalInterceptor,
-  MsalService,
-  MSAL_INSTANCE,
-  MSAL_GUARD_CONFIG,
-  MSAL_INTERCEPTOR_CONFIG
+    MsalGuard,
+    MsalInterceptor,
+    MSAL_INSTANCE,
+    MSAL_GUARD_CONFIG,
+    MSAL_INTERCEPTOR_CONFIG,
+    MsalGuardConfiguration,
+    MsalInterceptorConfiguration,
+    MsalService,
+    MsalBroadcastService
 } from '@azure/msal-angular';
 
-import { routes } from './app.routes';
-
 export function MSALInstanceFactory(): IPublicClientApplication {
-  return new PublicClientApplication({
-    auth: {
-      clientId: 'bd954135-48c5-4201-ac11-37071ec979ab',
-      authority: 'https://login.microsoftonline.com/d2199b76-e9ac-4fc3-92d6-bbeed1d825dc',
-      redirectUri: 'http://localhost:4200',
-      postLogoutRedirectUri: 'http://localhost:4200'
-    },
-    cache: {
-      cacheLocation: 'localStorage',
-      storeAuthStateInCookie: false
-    }
-  });
+    return new PublicClientApplication({
+        auth: {
+            // Aquí va el clientId de tu aplicación
+            clientId: 'bd954135-48c5-4201-ac11-37071ec979ab', 
+            // Aquí va el tenantId de tu aplicación
+            authority: 'https://login.microsoftonline.com/d2199b76-e9ac-4fc3-92d6-bbeed1d825dc',
+            // Aquí va la URL de redirección de tu aplicación
+            redirectUri: 'http://localhost:4200',
+            // Aquí va la URL de redirección después de la cerrar sesión en tu aplicación
+            postLogoutRedirectUri: 'http://localhost:4200'
+        },
+        cache: {
+            cacheLocation: BrowserCacheLocation.LocalStorage
+        }
+    });
 }
 
-export function MSALGuardConfigFactory() {
-  return {
-    interactionType: InteractionType.Redirect,
-    authRequest: {
-      scopes: ['User.Read']
-    }
-  };
+export function MSALGuardConfigFactory(): MsalGuardConfiguration {
+    return {
+        interactionType: InteractionType.Redirect,
+        authRequest: {
+            scopes: ['user.read']
+        }
+    };
 }
 
-export function MSALInterceptorConfigFactory() {
+export function MSALInterceptorConfigFactory(): MsalInterceptorConfiguration {
+    const protectedResourceMap = new Map<string, Array<string>>();
+    protectedResourceMap.set('https://graph.microsoft.com/v1.0/me', ['user.read']);
 
-  const protectedResourceMap = new Map<string, Array<string>>();
-
-  /*
-   * Por ahora dejamos User.Read para la autenticación
-   * con Microsoft.
-   *
-   * La URL del BFF se agregará cuando tengamos
-   * confirmado el scope personalizado de Pedidos360.
-   */
-
-  return {
-    interactionType: InteractionType.Redirect,
-    protectedResourceMap
-  };
+    return {
+        interactionType: InteractionType.Redirect,
+        protectedResourceMap
+    };
 }
 
 export const appConfig: ApplicationConfig = {
-  providers: [
+    providers: [
+        provideZonelessChangeDetection(),
+        provideRouter(routes),
+        provideHttpClient(
+            withInterceptorsFromDi()
+        ),
+        {
+            provide: MSAL_INSTANCE,
+            useFactory: MSALInstanceFactory
+        },
+        provideAppInitializer(async () => {
+            const msalInstance = inject(MSAL_INSTANCE) as IPublicClientApplication;
+            await msalInstance.initialize();
+            const response = await msalInstance.handleRedirectPromise();
 
-    provideBrowserGlobalErrorListeners(),
+            if (response?.account) {
+              msalInstance.setActiveAccount(response.account);
+            }
 
-    provideRouter(routes),
+            const activeAccount =
+              msalInstance.getActiveAccount();
 
-    provideHttpClient(
-      withInterceptorsFromDi()
-    ),
+            const accounts =
+              msalInstance.getAllAccounts();
 
-    {
-      provide: MSAL_INSTANCE,
-      useFactory: MSALInstanceFactory
-    },
+            if (!activeAccount && accounts.length > 0) {
+              msalInstance.setActiveAccount(accounts[0]);
+            }
+        }),
 
-    {
-      provide: MSAL_GUARD_CONFIG,
-      useFactory: MSALGuardConfigFactory
-    },
-
-    {
-      provide: MSAL_INTERCEPTOR_CONFIG,
-      useFactory: MSALInterceptorConfigFactory
-    },
-
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: MsalInterceptor,
-      multi: true
-    },
-
-    MsalService,
-
-    MsalGuard
-  ]
+        {
+            provide: MSAL_GUARD_CONFIG,
+            useFactory: MSALGuardConfigFactory
+        },
+        {
+            provide: MSAL_INTERCEPTOR_CONFIG,
+            useFactory: MSALInterceptorConfigFactory
+        },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: MsalInterceptor,
+            multi: true
+        },
+        MsalService,
+        MsalGuard,
+        MsalBroadcastService
+    ]
 };
