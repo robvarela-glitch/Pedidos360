@@ -63,6 +63,13 @@
     </header>
 
 
+    @if (errorMessage) {
+      <div class="api-alert">{{ errorMessage }}</div>
+    }
+    @if (loading) {
+      <div class="api-alert info">Cargando bitácora desde ms-audit...</div>
+    }
+
     <!-- RESUMEN -->
 
     <section class="summary-grid">
@@ -102,15 +109,13 @@
         <div class="summary-info">
 
           <span>
-            Administrador
+            Pedidos
           </span>
-
           <strong>
             {{ getAdminActions() }}
           </strong>
-
           <small>
-            acciones registradas
+            eventos order.*
           </small>
 
         </div>
@@ -127,15 +132,13 @@
         <div class="summary-info">
 
           <span>
-            Operador
+            Catálogo
           </span>
-
           <strong>
             {{ getOperatorActions() }}
           </strong>
-
           <small>
-            acciones registradas
+            eventos product.*
           </small>
 
         </div>

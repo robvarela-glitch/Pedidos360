@@ -1,0 +1,85 @@
+@if (loading()) {
+  <p class="notice">Cargando producto...</p>
+} @else if (error()) {
+  <div class="notice error">
+    {{ error() }}
+    <a routerLink="/tienda">Volver a la tienda</a>
+  </div>
+} @else if (product(); as p) {
+  <nav class="crumbs" aria-label="Ruta">
+    <a routerLink="/tienda">Tienda</a>
+    <span aria-hidden="true">/</span>
+    <a routerLink="/tienda" [queryParams]="{ cat: p.category }">{{ p.category }}</a>
+    <span aria-hidden="true">/</span>
+    <span aria-current="page">{{ p.name }}</span>
+  </nav>
+
+  <section class="product">
+    <div class="plate">
+      @if (p.image) {
+        <img [src]="p.image" [alt]="p.name" />
+      } @else {
+        <span class="placeholder">{{ p.category }}</span>
+      }
+    </div>
+
+    <div class="info">
+      <span class="brand">{{ p.brand }}</span>
+      <h1>{{ p.name }}</h1>
+      <span class="sku">SKU {{ p.sku }}</span>
+
+      <strong class="price">{{ price(p.price) }}</strong>
+
+      @if (p.stock <= 0 || !p.active) {
+        <p class="stock out">Sin stock por ahora</p>
+      } @else if (p.stock <= 5) {
+        <p class="stock low">Quedan {{ p.stock }} unidades</p>
+      } @else {
+        <p class="stock">{{ p.stock }} unidades disponibles</p>
+      }
+
+      @if (maxQuantity() > 0) {
+        <div class="buy-row">
+          <div class="stepper" role="group" aria-label="Cantidad">
+            <button type="button" (click)="decrease()" [disabled]="quantity() <= 1" aria-label="Quitar una unidad">−</button>
+            <span aria-live="polite">{{ quantity() }}</span>
+            <button type="button" (click)="increase()" [disabled]="quantity() >= maxQuantity()" aria-label="Agregar una unidad">+</button>
+          </div>
+          <button type="button" class="primary" (click)="addToCart()">Agregar al carrito</button>
+          <button type="button" class="secondary" (click)="addToCart(true)">Comprar ahora</button>
+        </div>
+      } @else if (inCart() > 0) {
+        <p class="cart-note">Ya tienes todas las unidades disponibles en tu carrito. <a routerLink="/tienda/carrito">Ir al carrito</a></p>
+      }
+
+      @if (inCart() > 0 && maxQuantity() > 0) {
+        <p class="cart-note">Tienes {{ inCart() }} en tu carrito. <a routerLink="/tienda/carrito">Ir al carrito</a></p>
+      }
+
+      <p class="description">{{ p.description }}</p>
+
+      @if (specs().length > 0) {
+        <h2>Especificaciones</h2>
+        <dl class="specs">
+          @for (row of specs(); track row.label) {
+            <div>
+              <dt>{{ row.label }}</dt>
+              <dd>{{ row.value }}</dd>
+            </div>
+          }
+        </dl>
+      }
+    </div>
+  </section>
+
+  @if (related().length > 0) {
+    <section class="related" aria-labelledby="related-title">
+      <h2 id="related-title">Más en {{ p.category }}</h2>
+      <div class="related-grid">
+        @for (item of related(); track item.id) {
+          <app-product-card [product]="item" />
+        }
+      </div>
+    </section>
+  }
+}

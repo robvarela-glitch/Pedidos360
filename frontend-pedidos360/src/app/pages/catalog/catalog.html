@@ -42,6 +42,7 @@
       </div>
 
 
+      @if (auth.isAdmin()) {
       <a
         routerLink="/catalog/new"
         class="new-product-button">
@@ -53,6 +54,7 @@
         Nuevo producto
 
       </a>
+      }
 
     </section>
 
@@ -286,6 +288,16 @@
 
       </div>
 
+
+      @if (errorMessage) {
+        <div class="api-alert">
+          {{ errorMessage }}
+          <button type="button" (click)="loadProducts()">Reintentar</button>
+        </div>
+      }
+      @if (loading) {
+        <div class="api-alert info">Cargando catálogo desde el backend...</div>
+      }
 
       @if (filteredProducts.length > 0) {
 

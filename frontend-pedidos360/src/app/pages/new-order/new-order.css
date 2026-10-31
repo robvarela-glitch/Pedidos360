@@ -945,3 +945,19 @@
   }
 
 }
+/* Botón para quitar un producto del pedido */
+.remove-item {
+  margin-left: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  border: 1px solid #fecaca;
+  background: #fff;
+  color: #b91c1c;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.remove-item:hover {
+  background: #fef2f2;
+}

@@ -1,18 +1,13 @@
-import { Component } from '@angular/core';
-import {
-  FormsModule,
-  NgForm
-} from '@angular/forms';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
+import { FormsModule, NgForm } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
 
-import {
-  Router,
-  RouterLink
-} from '@angular/router';
-
-import { Product } from '../../core/models/product.model';
+import { PRODUCT_CATEGORIES, Product, emptyProduct } from '../../core/models/product.model';
 import { CatalogService } from '../../core/services/catalog.service';
+import { describeHttpError } from '../../core/services/auth.service';
 import { Sidebar } from '../../shared/components/sidebar/sidebar';
 
+/** Alta de producto (solo Administrador). Se guarda en Oracle mediante ms-catalog. */
 @Component({
   selector: 'app-new-product',
   imports: [
@@ -25,129 +20,39 @@ import { Sidebar } from '../../shared/components/sidebar/sidebar';
 })
 export class NewProduct {
 
-  categories = [
-    'Notebooks',
-    'Monitores',
-    'Smartphones',
-    'Teclados',
-    'Mouse',
-    'Audio'
-  ];
+  private readonly catalogService = inject(CatalogService);
+  private readonly router = inject(Router);
+  private readonly cdr = inject(ChangeDetectorRef);
 
-
-  product: Product = {
-
-    id: 0,
-
-    name: '',
-
-    brand: '',
-
-    sku: '',
-
-    category: '',
-
-    stock: 0,
-
-    price: 0,
-
-    image: '',
-
-    description: '',
-
-    specifications: {
-
-      type: '',
-
-      connectivity: '',
-
-      color: '',
-
-      warranty: ''
-
-    }
-
-  };
-
-
+  categories = PRODUCT_CATEGORIES;
+  product: Product = emptyProduct();
   saving = false;
-
   saved = false;
-
-
-  constructor(
-    private catalogService: CatalogService,
-    private router: Router
-  ) {}
-
+  errorMessage = '';
 
   createProduct(form: NgForm): void {
-
     if (form.invalid) {
-
       form.control.markAllAsTouched();
-
       return;
-
     }
-
-
     this.saving = true;
-
-
-    const newProduct: Product = {
-
-      ...this.product,
-
-      id: Date.now()
-
-    };
-
-
-    this.catalogService
-      .createProduct(newProduct)
-      .subscribe({
-
-        next: () => {
-
-          this.saving = false;
-
-          this.saved = true;
-
-
-          setTimeout(() => {
-
-            this.router.navigate([
-              '/catalog'
-            ]);
-
-          }, 700);
-
-        },
-
-
-        error: (error) => {
-
-          console.error(
-            'Error al crear el producto:',
-            error
-          );
-
-          this.saving = false;
-
-        }
-
-      });
-
+    this.errorMessage = '';
+    this.catalogService.createProduct(this.product).subscribe({
+      next: (created) => {
+        this.saving = false;
+        this.saved = true;
+        this.cdr.markForCheck();
+        setTimeout(() => this.router.navigate(['/catalog', created.id]), 700);
+      },
+      error: (error) => {
+        this.errorMessage = describeHttpError(error);
+        this.saving = false;
+        this.cdr.markForCheck();
+      }
+    });
   }
-
 
   cancel(): void {
-
-    this.router.navigate([
-      '/catalog'
-    ]);
-
+    this.router.navigate(['/catalog']);
   }
-
 }

@@ -1,230 +1,316 @@
 # =========================================================================
-# Pedidos360 - Infraestructura y microservicios (parte de Agustín)
-# Levanta: Oracle, RabbitMQ, Kafka + Zookeeper, y los 5 microservicios
-# ms-pedidos360-orders / catalog / notify / report / audit
+# Pedidos360 - Infraestructura y servicios
+#
+#   docker compose up --build -d            -> todo (Oracle, clúster RabbitMQ, 7 microservicios, frontend)
+#   docker compose --profile kafka up -d    -> además Kafka + Zookeeper (opcional, KAFKA_ENABLED=true)
+#   Observabilidad: Grafana http://localhost:3000 · Prometheus http://localhost:9090
+#
+# Puertos publicados:
+#   - Hacia afuera (0.0.0.0): solo el frontend (80) y el BFF (8080, destino del API Gateway).
+#   - Solo en la máquina local (127.0.0.1): Oracle, RabbitMQ (panel), Prometheus, Grafana y cada microservicio,
+#     para pruebas y evidencias. En EC2 NO quedan expuestos a Internet.
 # =========================================================================
+name: pedidos360
+
+x-java-service: &java-service
+  restart: unless-stopped
+  healthcheck:
+    test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:$${SERVER_PORT}/actuator/health | grep -q UP || exit 1"]
+    interval: 15s
+    timeout: 5s
+    retries: 20
+    start_period: 60s
+
+x-common-env: &common-env
+  # IPv4: evita "Network unreachable" al contactar login.microsoftonline.com desde Docker.
+  # user.timezone: fechas en hora de Chile (sin esto, UTC: +3 h y "Eventos de hoy" en 0).
+  # -Xmx limita la memoria de cada JVM para que todo quepa en una instancia EC2.
+  JAVA_TOOL_OPTIONS: "-Djava.net.preferIPv4Stack=true -Duser.timezone=America/Santiago -Xms64m -Xmx${JVM_MAX_HEAP:-256m}"
+  AZURE_TENANT_ID: ${AZURE_TENANT_ID:?Defina AZURE_TENANT_ID en infra/.env}
+  API_CLIENT_ID: ${API_CLIENT_ID:-bd954135-48c5-4201-ac11-37071ec979ab}
+  API_REQUIRED_SCOPE: ${API_REQUIRED_SCOPE:-access_as_user}
+  DEFAULT_ROLE: ${DEFAULT_ROLE-Cliente}
+
+x-db-env: &db-env
+  DB_HOST: oracle-db
+  DB_PORT: 1521
+  DB_SERVICE: FREEPDB1
+  DB_USER: pedidos360
+  DB_PASSWORD: ${ORACLE_APP_PASSWORD:-pedidos360}
+
+x-rabbit-env: &rabbit-env
+  RABBITMQ_ADDRESSES: rabbitmq1:5672,rabbitmq2:5672
+  RABBITMQ_USER: ${RABBITMQ_USER:-pedidos360}
+  RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-pedidos360}
+  RABBIT_ALLOW_FAILURE_SIMULATION: ${RABBIT_ALLOW_FAILURE_SIMULATION:-true}
+
+x-rabbit-node: &rabbit-node
+  image: rabbitmq:3.13-management
+  restart: unless-stopped
+  # Escribe la cookie Erlang compartida (requisito para formar el clúster) y arranca RabbitMQ
+  entrypoint:
+    - /bin/bash
+    - -c
+    - >-
+      echo "$$RABBITMQ_CLUSTER_COOKIE" > /var/lib/rabbitmq/.erlang.cookie &&
+      chmod 400 /var/lib/rabbitmq/.erlang.cookie &&
+      chown rabbitmq:rabbitmq /var/lib/rabbitmq/.erlang.cookie &&
+      exec docker-entrypoint.sh rabbitmq-server
+  environment:
+    RABBITMQ_CLUSTER_COOKIE: ${RABBITMQ_ERLANG_COOKIE:-pedidos360-cluster-cookie}
+    RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-pedidos360}
+    RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-pedidos360}
+  volumes:
+    - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+  healthcheck:
+    test: ["CMD", "rabbitmq-diagnostics", "-q", "check_running"]
+    interval: 15s
+    timeout: 10s
+    retries: 12
+    start_period: 20s
 
 services:
 
   # ---------------------------------------------------------------------
-  # BASE DE DATOS
+  # BASE DE DATOS (Oracle Free, dentro de la instancia cloud)
   # ---------------------------------------------------------------------
   oracle-db:
     image: gvenzl/oracle-free:23-slim
     container_name: pedidos360-oracle
+    restart: unless-stopped
     environment:
-      ORACLE_PASSWORD: pedidos360
+      ORACLE_PASSWORD: ${ORACLE_PASSWORD:-pedidos360}
       APP_USER: pedidos360
-      APP_USER_PASSWORD: pedidos360
+      APP_USER_PASSWORD: ${ORACLE_APP_PASSWORD:-pedidos360}
     ports:
-      - "1521:1521"
+      - "127.0.0.1:1522:1521"
     volumes:
       - oracle_data:/opt/oracle/oradata
     healthcheck:
       test: ["CMD", "healthcheck.sh"]
       interval: 15s
       timeout: 10s
-      retries: 10
+      retries: 20
 
   # ---------------------------------------------------------------------
-  # MENSAJERÍA
+  # MENSAJERÍA: clúster RabbitMQ de 2 nodos
   # ---------------------------------------------------------------------
-  rabbitmq:
-    image: rabbitmq:3.13-management
-    container_name: pedidos360-rabbitmq
+  rabbitmq1:
+    <<: *rabbit-node
+    hostname: rabbitmq1
+    container_name: pedidos360-rabbitmq1
     ports:
-      - "5672:5672"
-      - "15672:15672"
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
-      interval: 15s
-      timeout: 10s
-      retries: 10
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672"
+
+  rabbitmq2:
+    <<: *rabbit-node
+    hostname: rabbitmq2
+    container_name: pedidos360-rabbitmq2
+    depends_on:
+      rabbitmq1:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:15673:15672"
 
   # ---------------------------------------------------------------------
-  # ZOOKEEPER
+  # KAFKA (OPCIONAL: docker compose --profile kafka up)
   # ---------------------------------------------------------------------
   zookeeper:
+    profiles: ["kafka"]
     image: confluentinc/cp-zookeeper:7.6.0
     container_name: pedidos360-zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
-    healthcheck:
-      test: ["CMD-SHELL", "cub zk-ready localhost:2181 30"]
-      interval: 10s
-      timeout: 10s
-      retries: 12
 
-  # ---------------------------------------------------------------------
-  # KAFKA
-  # ---------------------------------------------------------------------
   kafka:
+    profiles: ["kafka"]
     image: confluentinc/cp-kafka:7.6.0
     container_name: pedidos360-kafka
     depends_on:
-      zookeeper:
-        condition: service_healthy
+      - zookeeper
     ports:
-      - "9092:9092"
+      - "127.0.0.1:9092:9092"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-
-      # Puerto 29092 para los contenedores
-      # y 9092 para herramientas locales.
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-    healthcheck:
-      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list"]
-      interval: 10s
-      timeout: 10s
-      retries: 12
 
   # ---------------------------------------------------------------------
-  # MICROSERVICIO ORDERS
-  # ---------------------------------------------------------------------
-  ms-orders:
-    build: ../ms-pedidos360-orders
-    container_name: pedidos360-ms-orders
-    depends_on:
-      oracle-db:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-      kafka:
-        condition: service_healthy
-    ports:
-      - "8081:8081"
-    environment:
-      DB_HOST: oracle-db
-      DB_PORT: 1521
-      DB_SERVICE: FREEPDB1
-      DB_USER: pedidos360
-      DB_PASSWORD: pedidos360
-      RABBITMQ_HOST: rabbitmq
-      KAFKA_BOOTSTRAP: kafka:29092
-      AZURE_TENANT_ID: ${AZURE_TENANT_ID}
-      API_AUDIENCE: api://ms-pedidos360-orders
-
-  # ---------------------------------------------------------------------
-  # MICROSERVICIO CATALOG
+  # MICROSERVICIOS
   # ---------------------------------------------------------------------
   ms-catalog:
+    <<: *java-service
     build: ../ms-pedidos360-catalog
     container_name: pedidos360-ms-catalog
     depends_on:
-      oracle-db:
-        condition: service_healthy
+      oracle-db: { condition: service_healthy }
+      rabbitmq2: { condition: service_healthy }
     ports:
-      - "8082:8082"
+      - "127.0.0.1:8082:8082"
     environment:
-      DB_HOST: oracle-db
-      DB_PORT: 1521
-      DB_SERVICE: FREEPDB1
-      DB_USER: pedidos360
-      DB_PASSWORD: pedidos360
-      AZURE_TENANT_ID: ${AZURE_TENANT_ID}
-      API_AUDIENCE: api://ms-pedidos360-catalog
+      <<: [*common-env, *db-env, *rabbit-env]
+      SERVER_PORT: 8082
 
-  # ---------------------------------------------------------------------
-  # MICROSERVICIO NOTIFY
-  # ---------------------------------------------------------------------
   ms-notify:
+    <<: *java-service
     build: ../ms-pedidos360-notify
     container_name: pedidos360-ms-notify
     depends_on:
-      oracle-db:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
+      oracle-db: { condition: service_healthy }
+      rabbitmq2: { condition: service_healthy }
     ports:
-      - "8083:8083"
+      - "127.0.0.1:8083:8083"
     environment:
-      DB_HOST: oracle-db
-      DB_PORT: 1521
-      DB_SERVICE: FREEPDB1
-      DB_USER: pedidos360
-      DB_PASSWORD: pedidos360
-      RABBITMQ_HOST: rabbitmq
-      AZURE_TENANT_ID: ${AZURE_TENANT_ID}
-      API_AUDIENCE: api://ms-pedidos360-notify
+      <<: [*common-env, *db-env, *rabbit-env]
+      SERVER_PORT: 8083
 
-  # ---------------------------------------------------------------------
-  # MICROSERVICIO REPORT
-  # ---------------------------------------------------------------------
   ms-report:
+    <<: *java-service
     build: ../ms-pedidos360-report
     container_name: pedidos360-ms-report
     depends_on:
-      oracle-db:
-        condition: service_healthy
-      kafka:
-        condition: service_healthy
+      oracle-db: { condition: service_healthy }
+      rabbitmq2: { condition: service_healthy }
     ports:
-      - "8084:8084"
+      - "127.0.0.1:8084:8084"
     environment:
-      DB_HOST: oracle-db
-      DB_PORT: 1521
-      DB_SERVICE: FREEPDB1
-      DB_USER: pedidos360
-      DB_PASSWORD: pedidos360
+      <<: [*common-env, *db-env, *rabbit-env]
+      SERVER_PORT: 8084
+      KAFKA_ENABLED: ${KAFKA_ENABLED:-false}
       KAFKA_BOOTSTRAP: kafka:29092
-      AZURE_TENANT_ID: ${AZURE_TENANT_ID}
-      API_AUDIENCE: api://ms-pedidos360-report
 
-  # ---------------------------------------------------------------------
-  # MICROSERVICIO AUDIT
-  # ---------------------------------------------------------------------
   ms-audit:
+    <<: *java-service
     build: ../ms-pedidos360-audit
     container_name: pedidos360-ms-audit
     depends_on:
-      oracle-db:
-        condition: service_healthy
-      kafka:
-        condition: service_healthy
+      oracle-db: { condition: service_healthy }
+      rabbitmq2: { condition: service_healthy }
     ports:
-      - "8085:8085"
+      - "127.0.0.1:8085:8085"
     environment:
-      DB_HOST: oracle-db
-      DB_PORT: 1521
-      DB_SERVICE: FREEPDB1
-      DB_USER: pedidos360
-      DB_PASSWORD: pedidos360
+      <<: [*common-env, *db-env, *rabbit-env]
+      SERVER_PORT: 8085
+
+  ms-orders:
+    <<: *java-service
+    build: ../ms-pedidos360-orders
+    container_name: pedidos360-ms-orders
+    depends_on:
+      oracle-db: { condition: service_healthy }
+      rabbitmq2: { condition: service_healthy }
+      ms-catalog: { condition: service_healthy }
+      ms-notify: { condition: service_healthy }
+      ms-report: { condition: service_healthy }
+      ms-audit: { condition: service_healthy }
+    ports:
+      - "127.0.0.1:8081:8081"
+    environment:
+      <<: [*common-env, *db-env, *rabbit-env]
+      SERVER_PORT: 8081
+      CATALOG_SERVICE_URL: http://ms-catalog:8082
+      KAFKA_ENABLED: ${KAFKA_ENABLED:-false}
       KAFKA_BOOTSTRAP: kafka:29092
-      AZURE_TENANT_ID: ${AZURE_TENANT_ID}
-      API_AUDIENCE: api://ms-pedidos360-audit
+
+  ms-rabbitadmin:
+    <<: *java-service
+    build: ../ms-pedidos360-rabbitadmin
+    container_name: pedidos360-ms-rabbitadmin
+    depends_on:
+      rabbitmq2: { condition: service_healthy }
+    ports:
+      - "127.0.0.1:8086:8086"
+    environment:
+      <<: [*common-env, *rabbit-env]
+      SERVER_PORT: 8086
+      RABBITMQ_MANAGEMENT_URL: http://rabbitmq1:15672
 
   # ---------------------------------------------------------------------
-  # BFF
-  # Único punto de entrada para el frontend Angular
+  # BFF: único punto de entrada del backend (destino del API Gateway)
   # ---------------------------------------------------------------------
   ms-bff:
+    <<: *java-service
     build: ../ms-pedidos360-bff
     container_name: pedidos360-ms-bff
     depends_on:
-      - ms-orders
-      - ms-catalog
-      - ms-notify
-      - ms-report
-      - ms-audit
+      ms-orders: { condition: service_healthy }
+      ms-rabbitadmin: { condition: service_healthy }
     ports:
-      - "8080:8080"
+      - "${BFF_PUBLIC_PORT:-8080}:8080"
     environment:
-      AZURE_TENANT_ID: ${AZURE_TENANT_ID}
-      API_AUDIENCE: api://ms-pedidos360-bff
+      <<: *common-env
+      SERVER_PORT: 8080
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:4200,http://localhost}
       ORDERS_SERVICE_URL: http://ms-orders:8081
       CATALOG_SERVICE_URL: http://ms-catalog:8082
       NOTIFY_SERVICE_URL: http://ms-notify:8083
       REPORT_SERVICE_URL: http://ms-report:8084
       AUDIT_SERVICE_URL: http://ms-audit:8085
+      RABBITADMIN_SERVICE_URL: http://ms-rabbitadmin:8086
 
-# -------------------------------------------------------------------------
-# VOLUMENES
-# -------------------------------------------------------------------------
+  # ---------------------------------------------------------------------
+  # OBSERVABILIDAD: Prometheus (recolecta métricas) + Grafana (dashboards)
+  # Solo publicados en 127.0.0.1: en EC2 se consultan con un túnel SSH.
+  # ---------------------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: pedidos360-prometheus
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=7d
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "127.0.0.1:9090:9090"
+    depends_on:
+      - rabbitmq1
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: pedidos360-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-pedidos360}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/pedidos360-overview.json
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      - prometheus
+
+  # ---------------------------------------------------------------------
+  # FRONTEND Angular (nginx). config.json se genera con estas variables.
+  # ---------------------------------------------------------------------
+  frontend:
+    build: ../frontend-pedidos360
+    container_name: pedidos360-frontend
+    restart: unless-stopped
+    depends_on:
+      - ms-bff
+    ports:
+      - "${FRONTEND_PUBLIC_PORT:-80}:80"
+    environment:
+      # Vacío = mismo origen (nginx reenvía /api al BFF; en la nube, el API Gateway enruta /api)
+      API_BASE_URL: ${FRONTEND_API_BASE_URL:-}
+      AZURE_TENANT_ID: ${AZURE_TENANT_ID}
+      AZURE_CLIENT_ID: ${API_CLIENT_ID:-bd954135-48c5-4201-ac11-37071ec979ab}
+      API_SCOPE: ${FRONTEND_API_SCOPE:-api://bd954135-48c5-4201-ac11-37071ec979ab/access_as_user}
+
 volumes:
   oracle_data:
+  prometheus_data:
+  grafana_data:

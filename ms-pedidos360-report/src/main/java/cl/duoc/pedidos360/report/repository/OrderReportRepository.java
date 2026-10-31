@@ -10,12 +10,20 @@ public interface OrderReportRepository extends JpaRepository<OrderReportEntry, L
 
     List<OrderReportEntry> findByCustomerId(String customerId);
 
+    List<OrderReportEntry> findAllByOrderByProcessedAtDesc();
+
     @Query("SELECT COUNT(r) FROM OrderReportEntry r WHERE r.eventType = 'ORDER_CREATED'")
     long countPedidosCreados();
 
-    @Query("SELECT COALESCE(SUM(r.total), 0) FROM OrderReportEntry r WHERE r.eventType = 'ORDER_CREATED'")
-    Double totalVendido();
-
     @Query("SELECT COUNT(r) FROM OrderReportEntry r WHERE r.eventType = 'ORDER_CANCELLED'")
     long countPedidosCancelados();
+
+    @Query("SELECT COUNT(r) FROM OrderReportEntry r WHERE r.eventType = 'ORDER_STATUS_UPDATED'")
+    long countCambiosDeEstado();
+
+    @Query("SELECT COALESCE(SUM(r.total), 0.0) FROM OrderReportEntry r WHERE r.eventType = 'ORDER_CREATED'")
+    double totalVendido();
+
+    @Query("SELECT COALESCE(SUM(r.total), 0.0) FROM OrderReportEntry r WHERE r.eventType = 'ORDER_CANCELLED'")
+    double totalCancelado();
 }

@@ -1,0 +1,6 @@
+{
+  "apiBaseUrl": "${API_BASE_URL}",
+  "tenantId": "${AZURE_TENANT_ID}",
+  "clientId": "${AZURE_CLIENT_ID}",
+  "apiScope": "${API_SCOPE}"
+}

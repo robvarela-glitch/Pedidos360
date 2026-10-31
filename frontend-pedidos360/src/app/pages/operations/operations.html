@@ -1,0 +1,87 @@
+<app-sidebar></app-sidebar>
+
+<main class="ops">
+  <header class="ops-head">
+    <div>
+      <h1>Bandeja de pedidos</h1>
+      <p>
+        {{ pendingTotal() }} {{ pendingTotal() === 1 ? 'pedido requiere' : 'pedidos requieren' }} una acción.
+        Los más antiguos aparecen primero.
+      </p>
+    </div>
+    <div class="head-actions">
+      @if (updatedAt()) {
+        <span class="updated">Actualizado a las {{ time(updatedAt()) }}</span>
+      }
+      <button type="button" class="ghost" (click)="load()" [disabled]="loading()">Actualizar</button>
+    </div>
+  </header>
+
+  @if (error()) {
+    <div class="api-alert">
+      {{ error() }}
+      <button type="button" (click)="load()">Reintentar</button>
+    </div>
+  }
+
+  <nav class="stages" aria-label="Etapas">
+    @for (s of stages; track s.status) {
+      <button type="button" class="stage" [class.on]="stage() === s.status" (click)="selectStage(s.status)"
+              [attr.aria-pressed]="stage() === s.status">
+        <span class="stage-count">{{ counts()[s.status] }}</span>
+        <span class="stage-label">{{ s.label }}</span>
+      </button>
+    }
+  </nav>
+
+  <div class="toolbar">
+    <input type="search" placeholder="Buscar por número de pedido o cliente" aria-label="Buscar pedidos"
+           [value]="search()" (input)="onSearch($event)" />
+    @if (feedback(); as f) {
+      <span class="feedback" [class.bad]="!f.ok" role="status">{{ f.text }}</span>
+    }
+  </div>
+
+  @if (loading()) {
+    <p class="empty">Cargando pedidos...</p>
+  } @else if (visible().length === 0) {
+    <p class="empty">
+      @if (search()) {
+        Ningún pedido en "{{ currentStage().label }}" coincide con la búsqueda.
+      } @else {
+        No hay pedidos en "{{ currentStage().label }}".
+      }
+    </p>
+  } @else {
+    <ul class="queue">
+      @for (order of visible(); track order.id) {
+        <li class="row">
+          <div class="who">
+            <a [routerLink]="['/orders', order.id]" class="id">PED-{{ order.id }}</a>
+            <span class="customer">{{ order.customer }}</span>
+            <span class="age">{{ order.date }}, {{ waiting(order) }}</span>
+          </div>
+          <p class="items">{{ itemsSummary(order) }}</p>
+          <strong class="amount">{{ price(order.total) }}</strong>
+          <div class="actions">
+            @if (confirmingCancel() === order.id) {
+              <span class="confirm-text">¿Cancelar?</span>
+              <button type="button" class="danger" (click)="cancel(order)" [disabled]="working() === order.id">Sí, cancelar</button>
+              <button type="button" class="ghost" (click)="confirmingCancel.set(null)">No</button>
+            } @else {
+              @if (currentStage().next) {
+                <button type="button" class="primary" (click)="advance(order)" [disabled]="working() === order.id">
+                  {{ working() === order.id ? 'Guardando...' : currentStage().action }}
+                </button>
+              }
+              @if (order.status === 'CREADO' || order.status === 'EN_PREPARACION') {
+                <button type="button" class="ghost" (click)="confirmingCancel.set(order.id)">Cancelar</button>
+              }
+              <a [routerLink]="['/orders', order.id]" class="ghost">Detalle</a>
+            }
+          </div>
+        </li>
+      }
+    </ul>
+  }
+</main>

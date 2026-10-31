@@ -48,13 +48,20 @@
         </span>
 
         <strong>
-          Septiembre 2026
+          {{ period }}
         </strong>
 
       </div>
 
     </header>
 
+
+    @if (errorMessage) {
+      <div class="api-alert">{{ errorMessage }}</div>
+    }
+    @if (loading) {
+      <div class="api-alert info">Cargando reportes desde ms-report y ms-orders...</div>
+    }
 
     <!-- KPI -->
 
@@ -78,7 +85,7 @@
           </strong>
 
           <small class="positive">
-            ↑ 12,4% vs. período anterior
+            neto de cancelaciones (ms-report)
           </small>
 
         </div>
@@ -103,7 +110,7 @@
           </strong>
 
           <small class="positive">
-            ↑ 8,7% vs. período anterior
+            eventos ORDER_CREATED recibidos
           </small>
 
         </div>
@@ -145,15 +152,13 @@
         <div class="summary-info">
 
           <span>
-            Preparación promedio
+            Cambios de estado
           </span>
-
           <strong>
-            {{ averagePreparationTime }} min
+            {{ statusChanges }}
           </strong>
-
           <small>
-            tiempo operativo
+            eventos ORDER_STATUS_UPDATED
           </small>
 
         </div>
@@ -558,7 +563,7 @@
       </div>
 
       <span>
-        Información actualizada · Septiembre 2026
+        Información actualizada · {{ period }}
       </span>
 
     </div>

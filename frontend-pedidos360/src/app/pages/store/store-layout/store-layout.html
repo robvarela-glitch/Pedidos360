@@ -1,0 +1,73 @@
+<div class="store">
+
+  <header class="store-header">
+    <div class="header-row">
+
+      <a routerLink="/tienda" class="brand" aria-label="Pedidos360, ir a la tienda">
+        <span class="brand-mark" aria-hidden="true"><span></span><span></span></span>
+        <span class="brand-name">Pedidos360</span>
+      </a>
+
+      <form class="search" role="search" (submit)="submitSearch($event)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m16 16 5 5"></path></svg>
+        <input
+          type="search"
+          name="q"
+          placeholder="Buscar notebooks, monitores, teclados..."
+          aria-label="Buscar productos"
+          [value]="search"
+          (input)="onSearchInput($event)" />
+        <button type="submit">Buscar</button>
+      </form>
+
+      <nav class="header-actions" aria-label="Cuenta">
+        <a routerLink="/tienda/pedidos" routerLinkActive="active" class="header-link">Mis pedidos</a>
+
+        <a routerLink="/tienda/carrito" class="cart-link" [attr.aria-label]="'Carrito, ' + cart.count() + ' productos'">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.4 11.2a1 1 0 0 0 1 .8h9.2a1 1 0 0 0 1-.8L20 8H6.2"></path><circle cx="9.5" cy="20" r="1.4"></circle><circle cx="17" cy="20" r="1.4"></circle></svg>
+          <span>Carrito</span>
+          @if (cart.count() > 0) {
+            <span class="cart-count">{{ cart.count() }}</span>
+          }
+        </a>
+
+        <div class="account">
+          <button type="button" class="account-button" (click)="toggleAccount()" [attr.aria-expanded]="accountOpen()">
+            <span class="avatar">{{ initials }}</span>
+          </button>
+          @if (accountOpen()) {
+            <div class="account-menu">
+              <strong>{{ auth.displayName() }}</strong>
+              <small>{{ auth.user()?.username ?? auth.roleLabel() }}</small>
+              <a routerLink="/tienda/pedidos" (click)="toggleAccount()">Mis pedidos</a>
+              @if (auth.isAdmin()) {
+                <a routerLink="/dashboard" (click)="toggleAccount()">Panel de administración</a>
+              }
+              <button type="button" (click)="logout()">Cerrar sesión</button>
+            </div>
+          }
+        </div>
+      </nav>
+    </div>
+
+    <nav class="category-rail" aria-label="Categorías">
+      <a routerLink="/tienda" [queryParams]="{}" class="category">Todo</a>
+      @for (category of categories; track category) {
+        <a routerLink="/tienda" [queryParams]="{ cat: category }" class="category">{{ category }}</a>
+      }
+    </nav>
+  </header>
+
+  <main class="store-main">
+    <router-outlet />
+  </main>
+
+  <footer class="store-footer">
+    <span class="brand-name small">Pedidos360</span>
+    <span>Compra en línea y sigue tu pedido en cada etapa.</span>
+  </footer>
+
+  @if (toast.message(); as t) {
+    <div class="toast" [class.error]="!t.ok" role="status">{{ t.text }}</div>
+  }
+</div>

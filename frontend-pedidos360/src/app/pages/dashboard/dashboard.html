@@ -14,11 +14,12 @@
         </span>
 
         <h1>
-          Dashboard
+          {{ headerTitle }}
         </h1>
 
         <p>
-          Visualiza el estado general de tus pedidos y operaciones.
+          {{ headerSubtitle }}
+          <span class="role-chip">{{ auth.roleLabel() }}</span>
         </p>
 
       </div>
@@ -33,11 +34,10 @@
         <div>
 
           <strong>
-            11 septiembre 2026
+            {{ today }}
           </strong>
-
           <small>
-            Información del sistema
+            Datos en tiempo real
           </small>
 
         </div>
@@ -46,6 +46,13 @@
 
     </header>
 
+
+    @if (errorMessage) {
+      <div class="api-alert">{{ errorMessage }}</div>
+    }
+    @if (loading) {
+      <div class="api-alert info">Cargando información desde el backend...</div>
+    }
 
     <!-- KPI CARDS -->
     <section class="kpi-grid">
@@ -61,13 +68,13 @@
           </div>
 
           <span class="kpi-trend positive">
-            +12,4%
+            Pedidos
           </span>
 
         </div>
 
         <span class="kpi-label">
-          Total de pedidos
+          {{ auth.canManageOrders() ? 'Total de pedidos' : 'Mis pedidos' }}
         </span>
 
         <strong class="kpi-value">
@@ -121,7 +128,7 @@
           </div>
 
           <span class="kpi-trend positive">
-            +8,2%
+            Envíos
           </span>
 
         </div>
@@ -151,7 +158,7 @@
           </div>
 
           <span class="kpi-trend positive">
-            +15,7%
+            CLP
           </span>
 
         </div>
@@ -217,27 +224,11 @@
         <div class="sales-chart">
 
           <div class="chart-y-axis">
-
-            <span>
-              $5M
-            </span>
-
-            <span>
-              $4M
-            </span>
-
-            <span>
-              $3M
-            </span>
-
-            <span>
-              $2M
-            </span>
-
-            <span>
-              $0
-            </span>
-
+            <span>{{ axisLabel(1) }}</span>
+            <span>{{ axisLabel(0.75) }}</span>
+            <span>{{ axisLabel(0.5) }}</span>
+            <span>{{ axisLabel(0.25) }}</span>
+            <span>$0</span>
           </div>
 
 
@@ -344,7 +335,7 @@
                     class="status-dot"
                     [class.delivered]="item.label === 'Entregados'"
                     [class.preparing]="item.label === 'En preparación'"
-                    [class.accepted]="item.label === 'Aceptados'"
+                    
                     [class.dispatched]="item.label === 'Despachados'"
                     [class.created]="item.label === 'Creados'"
                     [class.cancelled]="item.label === 'Cancelados'">
@@ -456,6 +447,9 @@
 
 
             <tbody>
+              @if (!loading && recentOrders.length === 0) {
+                <tr><td colspan="5" class="muted">Aún no hay pedidos registrados.</td></tr>
+              }
 
               @for (
                 order of recentOrders;
@@ -466,9 +460,9 @@
 
                   <td>
 
-                    <strong class="order-id">
-                      {{ order.id }}
-                    </strong>
+                    <a class="order-id" [routerLink]="['/orders', order.id]">
+                      PED-{{ order.id }}
+                    </a>
 
                   </td>
 
@@ -485,9 +479,7 @@
                     <span
                       class="order-status"
                       [class]="getStatusClass(order.status)">
-
-                      {{ order.status }}
-
+                      {{ getStatusLabel(order.status) }}
                     </span>
 
                   </td>
@@ -525,11 +517,11 @@
             </span>
 
             <h2>
-              Productos destacados
+              Productos más pedidos
             </h2>
 
             <p>
-              Productos con mayor movimiento.
+              Unidades incluidas en pedidos no cancelados.
             </p>
 
           </div>
@@ -572,7 +564,7 @@
                 </strong>
 
                 <span>
-                  ventas
+                  unidades
                 </span>
 
               </div>
@@ -655,7 +647,7 @@
           </span>
 
           <strong>
-            82%
+            {{ dispatchRate }}%
           </strong>
 
         </div>
@@ -676,17 +668,16 @@
         <div>
 
           <span>
-            Plataforma
+            Rol
           </span>
-
           <strong>
-            Activa
+            {{ auth.roleLabel() }}
           </strong>
 
         </div>
 
         <small>
-          todos los servicios
+          según Entra ID
         </small>
 
       </div>

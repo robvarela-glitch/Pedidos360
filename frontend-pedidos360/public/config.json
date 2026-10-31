@@ -1,0 +1,6 @@
+{
+  "apiBaseUrl": "http://localhost:8080",
+  "tenantId": "d2199b76-e9ac-4fc3-92d6-bbeed1d825dc",
+  "clientId": "bd954135-48c5-4201-ac11-37071ec979ab",
+  "apiScope": "api://bd954135-48c5-4201-ac11-37071ec979ab/access_as_user"
+}

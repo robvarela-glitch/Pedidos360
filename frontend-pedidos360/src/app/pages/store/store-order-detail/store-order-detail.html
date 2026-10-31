@@ -1,0 +1,96 @@
+<a routerLink="/tienda/pedidos" class="back">Mis pedidos</a>
+
+@if (loading()) {
+  <p class="notice">Cargando el pedido...</p>
+} @else if (error()) {
+  <p class="notice error">{{ error() }}</p>
+} @else if (order(); as o) {
+
+  @if (justCreated()) {
+    <div class="created" role="status">
+      <strong>Pedido confirmado.</strong>
+      Quedó registrado con el número PED-{{ o.id }}. Te avisaremos aquí cada vez que cambie de etapa.
+    </div>
+  }
+
+  <header class="head">
+    <div>
+      <h1>PED-{{ o.id }}</h1>
+      <p>Realizado el {{ o.date }}</p>
+    </div>
+    <strong class="total">{{ price(o.total) }}</strong>
+  </header>
+
+  <div class="layout">
+    <section class="tracking" aria-label="Seguimiento">
+      @if (o.status === 'CANCELADO') {
+        <div class="cancelled">
+          <strong>Pedido cancelado</strong>
+          <p>Este pedido no seguirá avanzando.</p>
+        </div>
+      } @else {
+        <ol class="steps">
+          @for (step of steps; track step.status; let i = $index) {
+            <li [class.done]="i < current()" [class.current]="i === current()">
+              <span class="dot" aria-hidden="true"></span>
+              <div>
+                <strong>{{ step.label }}</strong>
+                <small>{{ i === current() ? step.help : (i < current() ? 'Completado' : 'Pendiente') }}</small>
+              </div>
+            </li>
+          }
+        </ol>
+      }
+
+      @if (o.status === 'CREADO') {
+        <div class="cancel-box">
+          @if (!confirmCancel()) {
+            <button type="button" class="ghost" (click)="confirmCancel.set(true)">Cancelar pedido</button>
+          } @else {
+            <p>¿Cancelar PED-{{ o.id }}? Esta acción no se puede deshacer.</p>
+            <div class="confirm-actions">
+              <button type="button" class="danger" (click)="cancel()" [disabled]="cancelling()">
+                {{ cancelling() ? 'Cancelando...' : 'Sí, cancelar pedido' }}
+              </button>
+              <button type="button" class="ghost" (click)="confirmCancel.set(false)">Mantener pedido</button>
+            </div>
+          }
+          @if (actionError()) {
+            <p class="action-error">{{ actionError() }}</p>
+          }
+        </div>
+      }
+    </section>
+
+    <section class="detail">
+      <h2>Productos</h2>
+      <ul class="items">
+        @for (item of o.items; track item.id) {
+          <li>
+            <span class="qty">{{ item.quantity }}×</span>
+            <span class="item-name">{{ item.productName }}</span>
+            <span class="item-price">{{ price(item.unitPrice * item.quantity) }}</span>
+          </li>
+        }
+      </ul>
+      <div class="sum">
+        <span>Total</span>
+        <strong>{{ price(o.total) }}</strong>
+      </div>
+
+      <h2>Avisos del pedido</h2>
+      @if (notifications().length === 0) {
+        <p class="muted">Aún no hay avisos para este pedido.</p>
+      } @else {
+        <ul class="notes">
+          @for (n of notifications(); track n.id) {
+            <li>
+              <span>{{ n.message }}</span>
+              <small>{{ date(n.sentAt) }}</small>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  </div>
+}

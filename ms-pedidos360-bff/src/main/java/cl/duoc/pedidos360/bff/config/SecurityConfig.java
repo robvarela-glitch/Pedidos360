@@ -1,270 +1,126 @@
 package cl.duoc.pedidos360.bff.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
-import org.springframework.security.oauth2.core.OAuth2Error;
-import org.springframework.security.oauth2.core.OAuth2TokenValidator;
-import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
-import org.springframework.security.oauth2.jwt.*;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
-import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
 import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
+import static cl.duoc.pedidos360.bff.config.Roles.ADMIN;
+import static cl.duoc.pedidos360.bff.config.Roles.CLIENTE;
+import static cl.duoc.pedidos360.bff.config.Roles.OPERADOR;
+
 /**
- * Configuración de seguridad del BFF.
+ * Seguridad del BFF (único punto de entrada del frontend, detrás del API Manager).
  *
- * Valida los JWT emitidos por Entra ID y aplica autorización
- * según los roles definidos en el claim "roles".
+ * - Valida el JWT de Entra ID: firma, issuer, expiración, audience y scope (JwtSecuritySupport).
+ * - Autoriza por App role (Admin / Operador / Cliente) con una lista EXPLÍCITA de método + ruta.
+ *   Cualquier combinación que no esté en la lista se rechaza (denyAll).
+ * - CORS solo para los orígenes configurados (pedidos360.cors.allowed-origins).
  *
- * Validaciones del JWT:
- *   1. Firma
- *   2. Issuer
- *   3. Expiración
- *   4. Audience
- *
- * Si el JWT falla cualquiera de las validaciones -> 401.
- * Si el JWT es válido pero falta el rol requerido -> 403.
+ * Sin token / token inválido -> 401. Token válido sin el rol requerido -> 403.
+ * La propiedad del recurso (un Cliente solo ve SUS pedidos) la aplica cada microservicio.
  */
 @Configuration
 public class SecurityConfig {
 
-    private final String issuerUri;
-    private final String audience;
+    /**
+     * Métricas para Prometheus: solo se aceptan desde la red interna de Docker
+     * (172.16.0.0/12 y 192.168.0.0/16) o desde la propia máquina. Desde Internet -> 403.
+     */
+    private static final WebExpressionAuthorizationManager INTERNAL_NETWORK = new WebExpressionAuthorizationManager(
+            "hasIpAddress('172.16.0.0/12') or hasIpAddress('192.168.0.0/16') or hasIpAddress('127.0.0.1')");
 
-    public SecurityConfig(Environment env) {
-        this.issuerUri = env.getProperty(
-            "spring.security.oauth2.resourceserver.jwt.issuer-uri"
-        );
+    private final List<String> allowedOrigins;
 
-        this.audience = env.getProperty(
-            "pedidos360.security.audience"
-        );
+    public SecurityConfig(@Value("${pedidos360.cors.allowed-origins}") List<String> allowedOrigins) {
+        this.allowedOrigins = allowedOrigins.stream().map(String::trim).filter(s -> !s.isEmpty()).toList();
     }
 
     @Bean
-    public SecurityFilterChain filterChain(
-        HttpSecurity http
-    ) throws Exception {
-
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtSecuritySupport jwtSupport) throws Exception {
         http
-            .csrf(
-                AbstractHttpConfigurer::disable
+            .csrf(AbstractHttpConfigurer::disable)
+            .cors(Customizer.withDefaults())
+            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
+                // ---- Públicos por diseño: health checks y ping de cada microservicio ----
+                .requestMatchers(HttpMethod.GET, "/actuator/health", "/actuator/health/**", "/actuator/info").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/*/publico/ping").permitAll()
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                // Métricas (Prometheus): solo red interna
+                .requestMatchers(HttpMethod.GET, "/actuator/prometheus").access(INTERNAL_NETWORK)
+                // Página de error interna de Spring: si queda bloqueada, cualquier fallo
+                // interno (500) se transforma en un 403 vacío y se oculta la causa real.
+                .requestMatchers("/error").permitAll()
+
+                // ---- Identidad del usuario autenticado (claims del JWT validado) ----
+                .requestMatchers(HttpMethod.GET, "/api/me").hasAnyRole(ADMIN, OPERADOR, CLIENTE)
+
+                // ---- Catálogo ----
+                .requestMatchers(HttpMethod.GET, "/api/catalog/products", "/api/catalog/products/*").hasAnyRole(ADMIN, OPERADOR, CLIENTE)
+                .requestMatchers(HttpMethod.POST, "/api/catalog/products").hasRole(ADMIN)
+                .requestMatchers(HttpMethod.PUT, "/api/catalog/products/*").hasRole(ADMIN)
+                .requestMatchers(HttpMethod.DELETE, "/api/catalog/products/*").hasRole(ADMIN)
+
+                // ---- Pedidos (el microservicio filtra por dueño para el rol Cliente) ----
+                .requestMatchers(HttpMethod.GET, "/api/orders", "/api/orders/*").hasAnyRole(ADMIN, OPERADOR, CLIENTE)
+                .requestMatchers(HttpMethod.POST, "/api/orders").hasAnyRole(ADMIN, OPERADOR, CLIENTE)
+                .requestMatchers(HttpMethod.PATCH, "/api/orders/*/status").hasAnyRole(ADMIN, OPERADOR)
+                .requestMatchers(HttpMethod.DELETE, "/api/orders/*").hasAnyRole(ADMIN, OPERADOR, CLIENTE)
+
+                // ---- Notificaciones (filtradas por dueño en ms-notify) ----
+                .requestMatchers(HttpMethod.GET, "/api/notify/notifications", "/api/notify/notifications/**").hasAnyRole(ADMIN, OPERADOR, CLIENTE)
+
+                // ---- Reportes y auditoría: solo Administrador ----
+                .requestMatchers(HttpMethod.GET, "/api/reports/**").hasRole(ADMIN)
+                .requestMatchers(HttpMethod.GET, "/api/audit/**").hasRole(ADMIN)
+
+                // ---- Administración de RabbitMQ: solo Administrador ----
+                .requestMatchers(HttpMethod.GET, "/api/rabbitadmin/**").hasRole(ADMIN)
+                .requestMatchers(HttpMethod.POST, "/api/rabbitadmin/**").hasRole(ADMIN)
+                .requestMatchers(HttpMethod.DELETE, "/api/rabbitadmin/**").hasRole(ADMIN)
+
+                // Todo lo demás (otros métodos o rutas) se rechaza
+                .anyRequest().denyAll()
             )
-
-            .sessionManagement(
-                sm -> sm.sessionCreationPolicy(
-                    SessionCreationPolicy.STATELESS
-                )
-            )
-
-            .authorizeHttpRequests(
-                auth -> auth
-
-                    // Endpoints públicos
-                    .requestMatchers(
-                        "/actuator/health",
-                        "/actuator/info",
-                        "/api/*/publico/**"
-                    )
-                    .permitAll()
-
-                    // -------------------------
-                    // PEDIDOS
-                    // -------------------------
-
-                    .requestMatchers(
-                        org.springframework.http.HttpMethod.GET,
-                        "/api/orders/**"
-                    )
-                    .hasAnyAuthority(
-                        "ROLE_Orders.Read",
-                        "ROLE_Orders.Write",
-                        "ROLE_Admin"
-                    )
-
-                    .requestMatchers(
-                        "/api/orders/**"
-                    )
-                    .hasAnyAuthority(
-                        "ROLE_Orders.Write",
-                        "ROLE_Admin"
-                    )
-
-                    // -------------------------
-                    // CATÁLOGO
-                    // -------------------------
-
-                    .requestMatchers(
-                        org.springframework.http.HttpMethod.GET,
-                        "/api/catalog/**"
-                    )
-                    .hasAnyAuthority(
-                        "ROLE_Catalog.Read",
-                        "ROLE_Catalog.Write",
-                        "ROLE_Admin"
-                    )
-
-                    .requestMatchers(
-                        "/api/catalog/**"
-                    )
-                    .hasAnyAuthority(
-                        "ROLE_Catalog.Write",
-                        "ROLE_Admin"
-                    )
-
-                    // -------------------------
-                    // REPORTES
-                    // -------------------------
-
-                    .requestMatchers(
-                        "/api/reports/**"
-                    )
-                    .hasAnyAuthority(
-                        "ROLE_Reports.Read",
-                        "ROLE_Admin"
-                    )
-
-                    // -------------------------
-                    // AUDITORÍA
-                    // -------------------------
-
-                    .requestMatchers(
-                        "/api/audit/**"
-                    )
-                    .hasAnyAuthority(
-                        "ROLE_Audit.Read",
-                        "ROLE_Admin"
-                    )
-
-                    // -------------------------
-                    // NOTIFICACIONES
-                    // -------------------------
-
-                    .requestMatchers(
-                        "/api/notify/**"
-                    )
-                    .hasAnyAuthority(
-                        "ROLE_Notify.Read",
-                        "ROLE_Admin"
-                    )
-
-                    // Cualquier otra ruta requiere JWT válido
-                    .anyRequest()
-                    .authenticated()
-            )
-
-            .oauth2ResourceServer(
-                oauth2 -> oauth2
-
-                    .jwt(
-                        jwt -> jwt
-                            .decoder(jwtDecoder())
-                            .jwtAuthenticationConverter(
-                                jwtAuthenticationConverter()
-                            )
-                    )
-
-                    // 401 cuando el token es inválido
-                    .authenticationEntryPoint(
-                        new BearerTokenAuthenticationEntryPoint()
-                    )
-
-                    // 403 cuando falta el rol
-                    .accessDeniedHandler(
-                        new BearerTokenAccessDeniedHandler()
-                    )
+            .oauth2ResourceServer(oauth2 -> oauth2
+                .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtSupport.authenticationConverter()))
+                .authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint())
+                .accessDeniedHandler(new BearerTokenAccessDeniedHandler())
             );
 
         return http.build();
     }
 
     /**
-     * Construye el JwtDecoder que valida:
-     *
-     * - Firma
-     * - Issuer
-     * - Expiración
-     * - Audience
+     * CORS: orígenes explícitos (sin comodín). El frontend envía el token en el header
+     * Authorization (no usa cookies), por eso allowCredentials queda en false.
      */
     @Bean
-    public JwtDecoder jwtDecoder() {
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(allowedOrigins);
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
+        config.setExposedHeaders(List.of("WWW-Authenticate"));
+        config.setAllowCredentials(false);
+        config.setMaxAge(3600L);
 
-        NimbusJwtDecoder decoder =
-            (NimbusJwtDecoder)
-            JwtDecoders.fromIssuerLocation(
-                issuerUri
-            );
-
-        OAuth2TokenValidator<Jwt> defaultValidators =
-            JwtValidators.createDefaultWithIssuer(
-                issuerUri
-            );
-
-        OAuth2TokenValidator<Jwt> audienceValidator =
-            jwt -> {
-
-                List<String> audiences =
-                    jwt.getAudience();
-
-                if (
-                    audiences != null &&
-                    audiences.contains(audience)
-                ) {
-                    return OAuth2TokenValidatorResult.success();
-                }
-
-                return OAuth2TokenValidatorResult.failure(
-                    new OAuth2Error(
-                        "invalid_token",
-                        "El token no fue emitido para esta API (audience)",
-                        null
-                    )
-                );
-            };
-
-        decoder.setJwtValidator(
-            new DelegatingOAuth2TokenValidator<>(
-                defaultValidators,
-                audienceValidator
-            )
-        );
-
-        return decoder;
-    }
-
-    /**
-     * Traduce el claim "roles" del JWT
-     * a authorities con prefijo ROLE_.
-     */
-    private JwtAuthenticationConverter jwtAuthenticationConverter() {
-
-        JwtGrantedAuthoritiesConverter authoritiesConverter =
-            new JwtGrantedAuthoritiesConverter();
-
-        authoritiesConverter.setAuthoritiesClaimName(
-            "roles"
-        );
-
-        authoritiesConverter.setAuthorityPrefix(
-            "ROLE_"
-        );
-
-        JwtAuthenticationConverter converter =
-            new JwtAuthenticationConverter();
-
-        converter.setJwtGrantedAuthoritiesConverter(
-            authoritiesConverter
-        );
-
-        return converter;
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/api/**", config);
+        return source;
     }
 }

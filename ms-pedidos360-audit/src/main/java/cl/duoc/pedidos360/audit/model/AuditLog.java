@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 
 /**
  * Registro inmutable de auditoria: deja trazabilidad de TODO evento de negocio
- * ocurrido en Pedidos360 (por ahora, todos los eventos de orders via Kafka).
+ * ocurrido en Pedidos360 (pedidos y productos, recibidos por RabbitMQ).
  */
 @Entity
 @Table(name = "PED360_AUDIT_LOG")
@@ -34,6 +34,13 @@ public class AuditLog {
 
     @Column(name = "EVENT_TYPE", nullable = false)
     private String eventType;
+
+    @Column(name = "ROUTING_KEY")
+    private String routingKey;
+
+    /** Usuario que originó el evento, si el evento lo informa. */
+    @Column(name = "ACTOR")
+    private String actor;
 
     @Column(name = "PAYLOAD", length = 1000)
     private String payload;

@@ -1,0 +1,25 @@
+server {
+    listen 80;
+    server_name _;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    # config.json se genera al iniciar el contenedor: nunca cachearlo
+    location = /config.json {
+        add_header Cache-Control "no-store";
+    }
+
+    # Mismo origen en local / EC2 directo: /api -> BFF (en la nube, el API Gateway
+    # enruta /api/* directamente al BFF con su autorizador JWT).
+    location /api/ {
+        proxy_pass ${BFF_UPSTREAM};
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Authorization $http_authorization;
+    }
+
+    # Aplicación Angular (SPA): rutas desconocidas -> index.html
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}

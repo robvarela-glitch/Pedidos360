@@ -24,8 +24,13 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /** Identificador del usuario dueño del pedido (claim "oid" del JWT de Entra ID). */
     @Column(name = "CUSTOMER_ID", nullable = false)
     private String customerId;
+
+    /** Nombre del usuario (claim "name"), para que el operador identifique al cliente. */
+    @Column(name = "CUSTOMER_NAME")
+    private String customerName;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "STATUS", nullable = false, length = 20)

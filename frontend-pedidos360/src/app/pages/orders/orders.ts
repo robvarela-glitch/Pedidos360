@@ -1,11 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
-import { Order, OrderStatus } from '../../core/models/order.model';
+import { ORDER_STATUSES, Order, OrderStatus, formatPrice, statusClass, statusLabel } from '../../core/models/order.model';
 import { OrdersService } from '../../core/services/orders.service';
+import { AuthService, describeHttpError } from '../../core/services/auth.service';
 import { Sidebar } from '../../shared/components/sidebar/sidebar';
 
+/**
+ * Listado de pedidos desde Oracle (vía BFF).
+ * Cliente: solo sus pedidos (filtrado por el backend según el claim oid del JWT).
+ * Operador / Administrador: todos los pedidos.
+ */
 @Component({
   selector: 'app-orders',
   imports: [
@@ -18,272 +24,95 @@ import { Sidebar } from '../../shared/components/sidebar/sidebar';
 })
 export class Orders implements OnInit {
 
+  readonly auth = inject(AuthService);
+  private readonly ordersService = inject(OrdersService);
+  private readonly cdr = inject(ChangeDetectorRef);
+
   orders: Order[] = [];
-
   filteredOrders: Order[] = [];
-
   searchText = '';
-
   selectedStatus: OrderStatus | '' = '';
-
-  statuses: OrderStatus[] = [
-    'CREADO',
-    'ACEPTADO',
-    'EN_PREPARACIÓN',
-    'DESPACHADO',
-    'ENTREGADO',
-    'CANCELADO'
-  ];
-
-
-  constructor(
-    private ordersService: OrdersService
-  ) {}
-
+  statuses: OrderStatus[] = ORDER_STATUSES;
+  loading = true;
+  errorMessage = '';
 
   ngOnInit(): void {
-
+    this.auth.loadMe().subscribe(() => this.cdr.markForCheck());
     this.loadOrders();
-
   }
-
 
   loadOrders(): void {
-
-    this.ordersService
-      .getOrders()
-      .subscribe({
-
-        next: (data) => {
-
-          this.orders = data;
-
-          this.filteredOrders = data;
-
-        },
-
-        error: (error) => {
-
-          console.error(
-            'Error al cargar los pedidos:',
-            error
-          );
-
-        }
-
-      });
-
+    this.loading = true;
+    this.errorMessage = '';
+    this.ordersService.getOrders().subscribe({
+      next: (data) => {
+        this.orders = data;
+        this.filterOrders();
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
+      error: (error) => {
+        this.errorMessage = describeHttpError(error);
+        this.loading = false;
+        this.cdr.markForCheck();
+      }
+    });
   }
-
 
   filterOrders(): void {
-
-    const search =
-      this.searchText
-        .toLowerCase()
-        .trim();
-
-
-    this.filteredOrders =
-      this.orders.filter((order) => {
-
-        const matchesSearch =
-
-          order.id
-            .toString()
-            .includes(search) ||
-
-          order.customer
-            .toLowerCase()
-            .includes(search);
-
-
-        const matchesStatus =
-
-          this.selectedStatus === '' ||
-
-          order.status ===
-          this.selectedStatus;
-
-
-        return (
-          matchesSearch &&
-          matchesStatus
-        );
-
-      });
-
+    const search = this.searchText.toLowerCase().trim();
+    this.filteredOrders = this.orders.filter((order) => {
+      const matchesSearch =
+        order.id.toString().includes(search) ||
+        order.customer.toLowerCase().includes(search);
+      const matchesStatus = this.selectedStatus === '' || order.status === this.selectedStatus;
+      return matchesSearch && matchesStatus;
+    });
   }
-
 
   onSearch(event: Event): void {
-
-    const input =
-      event.target as HTMLInputElement;
-
-    this.searchText =
-      input.value;
-
+    this.searchText = (event.target as HTMLInputElement).value;
     this.filterOrders();
-
   }
-
 
   onStatusChange(event: Event): void {
-
-    const select =
-      event.target as HTMLSelectElement;
-
-    this.selectedStatus =
-      select.value as OrderStatus | '';
-
+    this.selectedStatus = (event.target as HTMLSelectElement).value as OrderStatus | '';
     this.filterOrders();
-
   }
 
-
-  getStatusClass(
-    status: OrderStatus
-  ): string {
-
-    switch (status) {
-
-      case 'CREADO':
-        return 'created';
-
-      case 'ACEPTADO':
-        return 'accepted';
-
-      case 'EN_PREPARACIÓN':
-        return 'preparing';
-
-      case 'DESPACHADO':
-        return 'dispatched';
-
-      case 'ENTREGADO':
-        return 'delivered';
-
-      case 'CANCELADO':
-        return 'cancelled';
-
-      default:
-        return '';
-
-    }
-
+  getStatusClass(status: OrderStatus): string {
+    return statusClass(status);
   }
 
-
-  getStatusLabel(
-    status: OrderStatus
-  ): string {
-
-    switch (status) {
-
-      case 'CREADO':
-        return 'Creado';
-
-      case 'ACEPTADO':
-        return 'Aceptado';
-
-      case 'EN_PREPARACIÓN':
-        return 'En preparación';
-
-      case 'DESPACHADO':
-        return 'Despachado';
-
-      case 'ENTREGADO':
-        return 'Entregado';
-
-      case 'CANCELADO':
-        return 'Cancelado';
-
-      default:
-        return status;
-
-    }
-
+  getStatusLabel(status: OrderStatus): string {
+    return statusLabel(status);
   }
 
-
-  formatPrice(
-    price: number
-  ): string {
-
-    return new Intl.NumberFormat(
-      'es-CL',
-      {
-        style: 'currency',
-        currency: 'CLP',
-        maximumFractionDigits: 0
-      }
-    ).format(price);
-
+  formatPrice(price: number): string {
+    return formatPrice(price);
   }
-
 
   getTotalOrders(): number {
-
     return this.orders.length;
-
   }
-
 
   getPendingOrders(): number {
-
-    return this.orders.filter(
-      order =>
-        order.status === 'CREADO' ||
-        order.status === 'ACEPTADO' ||
-        order.status === 'EN_PREPARACIÓN'
-    ).length;
-
+    return this.orders.filter((o) => o.status === 'CREADO' || o.status === 'EN_PREPARACION').length;
   }
-
 
   getDispatchedOrders(): number {
-
-    return this.orders.filter(
-      order =>
-        order.status === 'DESPACHADO'
-    ).length;
-
+    return this.orders.filter((o) => o.status === 'DESPACHADO').length;
   }
-
 
   getDeliveredOrders(): number {
-
-    return this.orders.filter(
-      order =>
-        order.status === 'ENTREGADO'
-    ).length;
-
+    return this.orders.filter((o) => o.status === 'ENTREGADO').length;
   }
-
 
   getCancelledOrders(): number {
-
-    return this.orders.filter(
-      order =>
-        order.status === 'CANCELADO'
-    ).length;
-
+    return this.orders.filter((o) => o.status === 'CANCELADO').length;
   }
-
 
   getTotalSales(): number {
-
-    return this.orders
-      .filter(
-        order =>
-          order.status !== 'CANCELADO'
-      )
-      .reduce(
-        (total, order) =>
-          total + order.total,
-        0
-      );
-
+    return this.orders.filter((o) => o.status !== 'CANCELADO').reduce((total, o) => total + o.total, 0);
   }
-
 }

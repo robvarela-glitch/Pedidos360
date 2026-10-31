@@ -1,0 +1,35 @@
+<article class="card" [class.list]="layout() === 'list'">
+  <a class="plate" [routerLink]="['/tienda/producto', product().id]" [attr.aria-label]="'Ver ' + product().name">
+    @if (product().image) {
+      <img [src]="product().image" [alt]="product().name" loading="lazy" />
+    } @else {
+      <span class="placeholder" aria-hidden="true">{{ product().category || 'Producto' }}</span>
+    }
+  </a>
+
+  <div class="body">
+    <span class="meta">{{ product().brand }}<span class="sep" aria-hidden="true"></span>{{ product().category }}</span>
+    <h3>
+      <a [routerLink]="['/tienda/producto', product().id]">{{ product().name }}</a>
+    </h3>
+    @if (layout() === 'list') {
+      <p class="description">{{ product().description }}</p>
+    }
+    <span class="stock" [attr.data-state]="stockState()">{{ stockLabel() }}</span>
+  </div>
+
+  <div class="buy">
+    <strong class="price">{{ price(product().price) }}</strong>
+    <button type="button" (click)="add()" [disabled]="available() <= 0">
+      @if (product().stock <= 0) {
+        Sin stock
+      } @else if (available() <= 0) {
+        Máximo en el carrito
+      } @else if (inCart() > 0) {
+        Agregar otro ({{ inCart() }})
+      } @else {
+        Agregar al carrito
+      }
+    </button>
+  </div>
+</article>

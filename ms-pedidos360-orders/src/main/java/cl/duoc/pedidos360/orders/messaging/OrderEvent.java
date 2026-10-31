@@ -9,9 +9,10 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * Evento de dominio que viaja por Kafka (topic "orders.events", consumido por
- * report y audit) y por RabbitMQ (queue "orders.notifications", consumida por notify).
- * Los otros microservicios deben usar una clase equivalente (mismo contrato JSON).
+ * Evento de dominio de un pedido. Viaja como JSON por RabbitMQ:
+ *   - exchange direct -> cola de notificaciones (ms-notify)
+ *   - exchange topic  -> colas de reportes (ms-report) y auditoría (ms-audit)
+ * Los consumidores usan una clase equivalente (mismo contrato JSON).
  */
 @Getter
 @NoArgsConstructor
@@ -20,7 +21,8 @@ import java.time.LocalDateTime;
 public class OrderEvent implements Serializable {
     private Long orderId;
     private String customerId;
-    private String eventType; // ORDER_CREATED, ORDER_UPDATED, ORDER_CANCELLED
+    private String customerName;
+    private String eventType; // ORDER_CREATED, ORDER_STATUS_UPDATED, ORDER_CANCELLED
     private String status;
     private Double total;
     private LocalDateTime occurredAt;

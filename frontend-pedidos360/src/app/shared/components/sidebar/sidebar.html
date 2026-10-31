@@ -33,6 +33,7 @@
       </span>
 
 
+      @if (auth.isAdmin()) {
       <a
         routerLink="/dashboard"
         routerLinkActive="active"
@@ -53,6 +54,34 @@
 
         <span class="nav-label">
           Dashboard
+        </span>
+
+      </a>
+      }
+
+      <a
+        routerLink="/operacion"
+        routerLinkActive="active"
+        class="nav-item">
+
+        <span class="nav-icon">
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true">
+
+            <path
+              d="M4 13h4l2 3h4l2-3h4">
+            </path>
+
+            <path
+              d="M4 13 6.5 5h11L20 13v6H4z">
+            </path>
+
+          </svg>
+        </span>
+
+        <span class="nav-label">
+          Bandeja de pedidos
         </span>
 
       </a>
@@ -80,7 +109,7 @@
         </span>
 
         <span class="nav-label">
-          Pedidos
+          Todos los pedidos
         </span>
 
       </a>
@@ -116,10 +145,11 @@
     </div>
 
 
+    @if (auth.isAdmin()) {
     <div class="nav-section">
 
       <span class="nav-section-title">
-        ANÁLISIS
+        ADMINISTRACIÓN
       </span>
 
 
@@ -186,7 +216,63 @@
 
       </a>
 
+
+      <a
+        routerLink="/messaging"
+        routerLinkActive="active"
+        class="nav-item">
+
+        <span class="nav-icon">
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true">
+
+            <path
+              d="M4 6h16v12H4z">
+            </path>
+
+            <path
+              d="m4 7 8 6 8-6">
+            </path>
+
+          </svg>
+        </span>
+
+        <span class="nav-label">
+          Mensajería
+        </span>
+
+      </a>
+
+      <a
+        routerLink="/tienda"
+        routerLinkActive="active"
+        class="nav-item">
+
+        <span class="nav-icon">
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true">
+
+            <path
+              d="M4 9h16l-1 11H5z">
+            </path>
+
+            <path
+              d="M4 9l2-5h12l2 5">
+            </path>
+
+          </svg>
+        </span>
+
+        <span class="nav-label">
+          Ver tienda
+        </span>
+
+      </a>
+
     </div>
+    }
 
   </nav>
 
@@ -201,11 +287,11 @@
     <div>
 
       <strong>
-        Sistema operativo
+        {{ auth.displayName() }}
       </strong>
 
       <small>
-        Todos los servicios activos
+        {{ auth.roleLabel() }}
       </small>
 
     </div>

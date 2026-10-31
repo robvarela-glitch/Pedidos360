@@ -1,0 +1,179 @@
+:host {
+  display: block;
+}
+
+.card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.plate {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 3;
+  border-radius: 12px;
+  background: var(--plate);
+  overflow: hidden;
+}
+
+.plate img {
+  max-width: 80%;
+  max-height: 80%;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+}
+
+.placeholder {
+  font-family: var(--wide);
+  font-stretch: 120%;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.body {
+  padding: 14px 6px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.meta {
+  color: var(--muted);
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sep {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--line);
+}
+
+h3 {
+  margin: 0;
+  font-family: var(--wide);
+  font-stretch: 112%;
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+h3 a {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+h3 a:hover {
+  color: var(--brand);
+}
+
+.description {
+  margin: 4px 0 0;
+  color: var(--ink-2);
+  font-size: 14px;
+  max-width: 60ch;
+}
+
+.stock {
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ok);
+}
+
+.stock[data-state='low'] {
+  color: var(--warn);
+}
+
+.stock[data-state='out'] {
+  color: var(--danger);
+}
+
+.buy {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 6px 4px;
+}
+
+.price {
+  font-family: var(--wide);
+  font-stretch: 105%;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+button {
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  background: var(--brand);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+button:hover:not(:disabled) {
+  background: var(--brand-ink);
+}
+
+button:disabled {
+  background: var(--plate);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+/* ===== Vista de lista ===== */
+.card.list {
+  flex-direction: row;
+  align-items: center;
+  gap: 18px;
+}
+
+.card.list .plate {
+  width: 180px;
+  flex-shrink: 0;
+}
+
+.card.list .body {
+  padding: 4px 0;
+}
+
+.card.list .buy {
+  flex-direction: column;
+  align-items: flex-end;
+  padding: 0 8px 0 0;
+}
+
+@media (max-width: 640px) {
+  .card.list {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .card.list .plate {
+    width: auto;
+  }
+
+  .card.list .buy {
+    flex-direction: row;
+    align-items: center;
+    padding: 10px 6px 4px;
+  }
+}

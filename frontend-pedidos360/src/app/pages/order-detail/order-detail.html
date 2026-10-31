@@ -369,26 +369,107 @@
       </div>
 
 
-      <!-- INFORMACIÓN OPERATIVA -->
-
-      <section class="operational-card">
-
-        <div class="operational-icon">
-          ✓
+      <!-- PRODUCTOS DEL PEDIDO -->
+      <section class="info-card items-card">
+        <div class="card-header">
+          <div>
+            <span class="card-eyebrow">
+              DETALLE
+            </span>
+            <h2>
+              Productos
+            </h2>
+          </div>
         </div>
 
-        <div>
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Cantidad</th>
+              <th>Precio unitario</th>
+              <th>Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of order.items; track item.id) {
+              <tr>
+                <td>{{ item.productName }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ formatPrice(item.unitPrice) }}</td>
+                <td><strong>{{ formatPrice(item.unitPrice * item.quantity) }}</strong></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </section>
 
-          <strong>
-            Pedido registrado correctamente
-          </strong>
+      <!-- ACCIONES SEGÚN ROL -->
+      @if (successMessage) {
+        <div class="api-alert success">{{ successMessage }}</div>
+      }
+      @if (errorMessage) {
+        <div class="api-alert">{{ errorMessage }}</div>
+      }
 
-          <p>
-            La información mostrada corresponde al estado actual registrado en Pedidos360.
-          </p>
+      @if (nextStatuses.length > 0 || canClientCancel) {
+        <section class="operational-card actions-card">
+          <div class="operational-icon">
+            ⚙
+          </div>
+          <div class="actions-body">
+            <strong>
+              {{ auth.canManageOrders() ? 'Gestión del pedido (' + auth.roleLabel() + ')' : 'Acciones del cliente' }}
+            </strong>
+            <p>
+              Cada cambio se guarda en Oracle y publica un evento en RabbitMQ (notificación, reporte y auditoría).
+            </p>
+            <div class="action-buttons">
+              @for (status of nextStatuses; track status) {
+                <button
+                  type="button"
+                  class="action-button"
+                  [class.danger]="status === 'CANCELADO'"
+                  [disabled]="updating"
+                  (click)="changeStatus(status)">
+                  {{ status === 'CANCELADO' ? 'Cancelar pedido' : 'Pasar a ' + getStatusLabel(status) }}
+                </button>
+              }
+              @if (canClientCancel) {
+                <button
+                  type="button"
+                  class="action-button danger"
+                  [disabled]="updating"
+                  (click)="cancelOrder()">
+                  Cancelar mi pedido
+                </button>
+              }
+            </div>
+          </div>
+        </section>
+      }
 
+      <!-- NOTIFICACIONES (ms-notify, consumidas desde RabbitMQ) -->
+      <section class="info-card items-card">
+        <div class="card-header">
+          <div>
+            <span class="card-eyebrow">
+              NOTIFICACIONES
+            </span>
+            <h2>
+              Historial del pedido
+            </h2>
+          </div>
         </div>
-
+        @if (notifications.length === 0) {
+          <p class="muted-text">Aún no hay notificaciones para este pedido.</p>
+        }
+        @for (n of notifications; track n.id) {
+          <div class="notification-row">
+            <strong>{{ n.message }}</strong>
+            <small>{{ formatDate(n.sentAt) }} · {{ n.eventType }}</small>
+          </div>
+        }
       </section>
 
 
@@ -410,7 +491,7 @@
         </h2>
 
         <p>
-          No fue posible encontrar el pedido solicitado.
+          {{ errorMessage || 'No fue posible encontrar el pedido solicitado.' }}
         </p>
 
         <button

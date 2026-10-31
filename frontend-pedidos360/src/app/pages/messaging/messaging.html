@@ -1,0 +1,154 @@
+<app-sidebar></app-sidebar>
+
+<main class="messaging-page">
+  <div class="messaging-container">
+
+    <header class="page-header">
+      <div>
+        <span class="eyebrow">ADMINISTRACIÓN · RABBITMQ</span>
+        <h1>Mensajería</h1>
+        <p>
+          Clúster RabbitMQ, colas con DLQ, exchanges y bindings administrados por
+          <strong>ms-pedidos360-rabbitadmin</strong>.
+        </p>
+      </div>
+      <button type="button" class="ghost-button" (click)="refresh()" [disabled]="loading">
+        ↻ Actualizar
+      </button>
+    </header>
+
+    @if (errorMessage) {
+      <div class="api-alert">{{ errorMessage }}</div>
+    }
+    @if (successMessage) {
+      <div class="api-alert success">{{ successMessage }}</div>
+    }
+    @if (loading) {
+      <div class="api-alert info">Consultando RabbitMQ...</div>
+    }
+
+    <!-- NODOS DEL CLÚSTER -->
+    <section class="panel">
+      <h2>Nodos del clúster ({{ nodes.length }})</h2>
+      <div class="node-grid">
+        @for (node of nodes; track node.name) {
+          <div class="node-card" [class.down]="!node.running">
+            <span class="dot"></span>
+            <div>
+              <strong>{{ node.name }}</strong>
+              <small>{{ node.running ? 'En ejecución' : 'Detenido' }} · {{ node.type }}</small>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- COLAS -->
+    <section class="panel">
+      <h2>Colas ({{ queues.length }})</h2>
+      <table class="data-table">
+        <thead>
+          <tr><th>Nombre</th><th>Mensajes</th><th>Consumidores</th><th>Nodo</th><th></th></tr>
+        </thead>
+        <tbody>
+          @for (q of queues; track q.name) {
+            <tr [class.dlq]="isDlq(q.name)">
+              <td>
+                {{ q.name }}
+                @if (isDlq(q.name)) { <span class="tag">DLQ</span> }
+              </td>
+              <td>{{ q.messages }}</td>
+              <td>{{ q.consumers }}</td>
+              <td class="muted">{{ q.node }}</td>
+              <td>
+                <button type="button" class="link-danger" [disabled]="working" (click)="deleteQueue(q.name)">Eliminar</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      <form class="inline-form" (ngSubmit)="createQueue()">
+        <input name="queueName" [(ngModel)]="newQueue.name" placeholder="nombre.de.cola" required />
+        <label><input type="checkbox" name="withDlq" [(ngModel)]="newQueue.withDlq" /> con DLQ</label>
+        <button type="submit" class="primary-button" [disabled]="working">Crear cola</button>
+      </form>
+    </section>
+
+    <!-- EXCHANGES Y BINDINGS -->
+    <section class="panel two-columns">
+      <div>
+        <h2>Exchanges ({{ exchanges.length }})</h2>
+        <table class="data-table">
+          <thead><tr><th>Nombre</th><th>Tipo</th><th></th></tr></thead>
+          <tbody>
+            @for (e of exchanges; track e.name) {
+              <tr>
+                <td>{{ e.name }}</td>
+                <td><span class="tag type">{{ e.type }}</span></td>
+                <td><button type="button" class="link-danger" [disabled]="working" (click)="deleteExchange(e.name)">Eliminar</button></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        <form class="inline-form" (ngSubmit)="createExchange()">
+          <input name="exchangeName" [(ngModel)]="newExchange.name" placeholder="nombre.exchange" required />
+          <select name="exchangeType" [(ngModel)]="newExchange.type">
+            <option value="DIRECT">direct</option>
+            <option value="TOPIC">topic</option>
+            <option value="FANOUT">fanout</option>
+            <option value="HEADERS">headers</option>
+          </select>
+          <button type="submit" class="primary-button" [disabled]="working">Crear exchange</button>
+        </form>
+      </div>
+
+      <div>
+        <h2>Bindings ({{ bindings.length }})</h2>
+        <table class="data-table">
+          <thead><tr><th>Exchange</th><th>Routing key</th><th>Cola</th><th></th></tr></thead>
+          <tbody>
+            @for (b of bindings; track b.source + b.destination + b.routing_key) {
+              <tr>
+                <td>{{ b.source }}</td>
+                <td><code>{{ b.routing_key }}</code></td>
+                <td>{{ b.destination }}</td>
+                <td><button type="button" class="link-danger" [disabled]="working" (click)="deleteBinding(b)">Eliminar</button></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        <form class="inline-form" (ngSubmit)="createBinding()">
+          <input name="bExchange" [(ngModel)]="newBinding.exchange" placeholder="exchange" required />
+          <input name="bKey" [(ngModel)]="newBinding.routingKey" placeholder="routing key" />
+          <input name="bQueue" [(ngModel)]="newBinding.queue" placeholder="cola" required />
+          <button type="submit" class="primary-button" [disabled]="working">Crear binding</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- PRUEBA DE REINTENTOS Y DLQ -->
+    <section class="panel">
+      <h2>Prueba de reintentos y DLQ</h2>
+      <p class="muted">
+        Publica un evento de prueba con el header <code>x-simulate-failure</code>.
+        <strong>fatal</strong>: error no recuperable → DLQ inmediata.
+        <strong>transient</strong>: error recuperable → 3 intentos → DLQ.
+      </p>
+      <form class="inline-form" (ngSubmit)="publishTest()">
+        <select name="testExchange" [(ngModel)]="testMessage.exchange">
+          <option value="pedidos360.orders.direct">pedidos360.orders.direct (direct)</option>
+          <option value="pedidos360.events.topic">pedidos360.events.topic (topic)</option>
+        </select>
+        <input name="testKey" [(ngModel)]="testMessage.routingKey" placeholder="routing key" />
+        <select name="testFailure" [(ngModel)]="testMessage.failure">
+          <option value="fatal">fatal (DLQ directa)</option>
+          <option value="transient">transient (reintentos)</option>
+          <option value="">sin fallo</option>
+        </select>
+        <button type="submit" class="primary-button" [disabled]="working">Publicar</button>
+      </form>
+    </section>
+
+  </div>
+</main>

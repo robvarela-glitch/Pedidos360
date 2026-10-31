@@ -16,6 +16,8 @@ import {
   RedirectRequest
 } from '@azure/msal-browser';
 
+import { appSettings } from '../../core/config/app-config';
+
 
 @Component({
   selector: 'app-login',
@@ -93,7 +95,7 @@ export class Login implements OnInit {
 
 
       this.router.navigate(
-        ['/dashboard'],
+        ['/inicio'],
         {
           replaceUrl: true
         }
@@ -113,11 +115,15 @@ export class Login implements OnInit {
     );
 
 
+    // OpenID Connect (openid, profile) + scope delegado de la API de Pedidos360.
+    // MSAL usa Authorization Code Flow con PKCE.
     const loginRequest:
       RedirectRequest = {
 
         scopes: [
-          'User.Read'
+          'openid',
+          'profile',
+          appSettings().apiScope
         ]
       };
 

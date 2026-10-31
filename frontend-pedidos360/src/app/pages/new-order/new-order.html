@@ -35,7 +35,7 @@
         </h1>
 
         <p>
-          Registra un nuevo pedido y agrega los productos solicitados.
+          Selecciona productos del catálogo. El pedido queda asociado a tu usuario de Microsoft Entra ID.
         </p>
 
       </div>
@@ -60,7 +60,7 @@
 
     <form
       #orderForm="ngForm"
-      (ngSubmit)="createOrder(orderForm)"
+      (ngSubmit)="createOrder()"
       class="order-form">
 
 
@@ -81,7 +81,7 @@
             </h2>
 
             <p>
-              Ingresa la información básica del pedido.
+              El pedido se registra a nombre del usuario autenticado.
             </p>
 
           </div>
@@ -92,36 +92,16 @@
         <div class="form-content">
 
           <div class="field">
-
-            <label for="customer">
+            <label>
               Cliente
-              <span>*</span>
             </label>
-
-            <input
-              id="customer"
-              name="customer"
-              type="text"
-              placeholder="Ej. Empresa ABC"
-              [(ngModel)]="order.customer"
-              required
-              minlength="3"
-              #customer="ngModel"
-            />
-
-            @if (
-              customer.invalid &&
-              customer.touched
-            ) {
-
-              <small class="field-error">
-                Ingresa el nombre del cliente.
-              </small>
-
-            }
-
+            <div class="status-preview">
+              {{ auth.displayName() }}
+            </div>
+            <small class="field-help">
+              Se toma del token validado por el backend (no se puede modificar).
+            </small>
           </div>
-
 
           <div class="field">
 
@@ -186,26 +166,24 @@
             <select
               id="product"
               name="product"
-              [(ngModel)]="selectedProduct">
+              [(ngModel)]="selectedProductId"
+              [disabled]="loadingProducts">
 
               <option value="">
-                Seleccionar producto...
+                {{ loadingProducts ? 'Cargando catálogo...' : 'Seleccionar producto...' }}
               </option>
 
               @for (
                 product of products;
-                track product.name
+                track product.id
               ) {
-
                 <option
-                  [value]="product.name">
-
+                  [value]="product.id">
                   {{ product.name }}
                   ·
                   {{ formatPrice(product.price) }}
-
+                  · stock {{ product.stock }}
                 </option>
-
               }
 
             </select>
@@ -235,7 +213,7 @@
             type="button"
             class="add-product-button"
             (click)="addProduct()"
-            [disabled]="!selectedProduct">
+            [disabled]="!selectedProductId">
 
             <span>
               +
@@ -261,8 +239,7 @@
           </div>
 
 
-          @if (order.total > 0) {
-
+          @for (item of items; track item.product.id) {
             <div class="product-added-row">
 
               <div class="added-product-icon">
@@ -270,24 +247,30 @@
               </div>
 
               <div class="added-product-info">
-
                 <strong>
-                  Productos seleccionados
+                  {{ item.product.name }}
                 </strong>
-
                 <small>
-                  El total se ha calculado automáticamente.
+                  {{ item.quantity }} × {{ formatPrice(item.product.price) }}
                 </small>
-
               </div>
 
               <strong class="added-total">
-                {{ formatPrice(order.total) }}
+                {{ formatPrice(item.product.price * item.quantity) }}
               </strong>
 
-            </div>
+              <button
+                type="button"
+                class="remove-item"
+                (click)="removeItem(item)"
+                aria-label="Quitar producto">
+                ✕
+              </button>
 
-          } @else {
+            </div>
+          }
+
+          @if (items.length === 0) {
 
             <div class="no-products">
 
@@ -327,14 +310,14 @@
           </span>
 
           <small>
-            Monto calculado según los productos seleccionados.
+            Referencial: el backend recalcula el total con los precios oficiales del catálogo.
           </small>
 
         </div>
 
 
         <strong>
-          {{ formatPrice(order.total) }}
+          {{ formatPrice(total) }}
         </strong>
 
       </section>
@@ -357,7 +340,7 @@
         <button
           type="submit"
           class="save-button"
-          [disabled]="saving || orderForm.invalid || order.total <= 0">
+          [disabled]="saving || items.length === 0">
 
           @if (saving) {
 
@@ -381,6 +364,10 @@
       </div>
 
 
+      @if (errorMessage) {
+        <div class="api-alert">{{ errorMessage }}</div>
+      }
+
       <!-- SUCCESS -->
 
       @if (saved) {
@@ -391,7 +378,7 @@
             ✓
           </span>
 
-          Pedido creado correctamente. Redirigiendo a pedidos...
+          Pedido creado y guardado en Oracle. Redirigiendo al detalle...
 
         </div>
 

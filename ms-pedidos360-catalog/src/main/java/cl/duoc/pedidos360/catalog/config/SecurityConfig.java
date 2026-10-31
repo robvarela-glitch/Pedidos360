@@ -2,89 +2,51 @@ package cl.duoc.pedidos360.catalog.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.oauth2.core.OAuth2TokenValidator;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtDecoders;
-import org.springframework.security.oauth2.jwt.JwtValidators;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
-import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
+import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
 import org.springframework.security.web.SecurityFilterChain;
-
-import java.util.List;
+import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
 
 /**
- * Igual que en la guia de Sesion 3 (MSAL + Angular + Spring Security):
- * este microservicio actua como Resource Server. Valida que el JWT que llega
- * (reenviado por el BFF de Benjamin) fue emitido por el tenant esperado (issuer)
- * y que va dirigido a esta API (audience).
+ * Este microservicio es un Resource Server: valida por sí mismo el JWT que le
+ * reenvía el BFF (defensa en profundidad). Las reglas por rol se aplican en los
+ * controladores con @PreAuthorize (ver Roles).
  *
- * Configurar en application.properties:
- *   spring.security.oauth2.resourceserver.jwt.issuer-uri
- *   pedidos360.security.audience
+ * Sin token o token inválido -> 401. Token válido sin el rol necesario -> 403.
  */
 @Configuration
+@EnableMethodSecurity
 public class SecurityConfig {
 
-    private final String issuerUri;
-    private final String audience;
-
-    public SecurityConfig(
-            org.springframework.core.env.Environment env) {
-        this.issuerUri = env.getProperty("spring.security.oauth2.resourceserver.jwt.issuer-uri");
-        this.audience = env.getProperty("pedidos360.security.audience");
-    }
+    /**
+     * Métricas para Prometheus: solo se aceptan desde la red interna de Docker
+     * (172.16.0.0/12 y 192.168.0.0/16) o desde la propia máquina. Desde Internet -> 403.
+     */
+    private static final WebExpressionAuthorizationManager INTERNAL_NETWORK = new WebExpressionAuthorizationManager(
+            "hasIpAddress('172.16.0.0/12') or hasIpAddress('192.168.0.0/16') or hasIpAddress('127.0.0.1')");
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtSecuritySupport jwtSupport) throws Exception {
         http
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/catalog/publico/**", "/actuator/health").permitAll()
+                // Métricas (Prometheus): solo red interna
+                .requestMatchers(HttpMethod.GET, "/actuator/prometheus").access(INTERNAL_NETWORK)
+                .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info",
+                        "/api/catalog/publico/**").permitAll()
                 .anyRequest().authenticated()
             )
             .oauth2ResourceServer(oauth2 -> oauth2
-                .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
+                .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtSupport.authenticationConverter()))
+                .authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint())
+                .accessDeniedHandler(new BearerTokenAccessDeniedHandler())
             );
         return http.build();
-    }
-
-    @Bean
-    public JwtDecoder jwtDecoder() {
-        NimbusJwtDecoder decoder = (NimbusJwtDecoder) JwtDecoders.fromIssuerLocation(issuerUri);
-
-        OAuth2TokenValidator<Jwt> defaultValidators = JwtValidators.createDefaultWithIssuer(issuerUri);
-        OAuth2TokenValidator<Jwt> audienceValidator = jwt -> {
-            List<String> audiences = jwt.getAudience();
-            if (audiences != null && audiences.contains(audience)) {
-                return org.springframework.security.oauth2.core.OAuth2TokenValidatorResult.success();
-            }
-            return org.springframework.security.oauth2.core.OAuth2TokenValidatorResult.failure(
-                    new org.springframework.security.oauth2.core.OAuth2Error(
-                            "invalid_token", "El token no fue emitido para esta API (audience)", null));
-        };
-
-        decoder.setJwtValidator(new org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator<>(
-                defaultValidators, audienceValidator));
-        return decoder;
-    }
-
-    /**
-     * Traduce los scopes/roles del token (claim "roles" o "scp") en authorities
-     * de Spring Security con prefijo SCOPE_ / ROLE_.
-     */
-    private JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtGrantedAuthoritiesConverter authoritiesConverter = new JwtGrantedAuthoritiesConverter();
-        authoritiesConverter.setAuthoritiesClaimName("roles");
-        authoritiesConverter.setAuthorityPrefix("ROLE_");
-
-        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-        converter.setJwtGrantedAuthoritiesConverter(authoritiesConverter);
-        return converter;
     }
 }

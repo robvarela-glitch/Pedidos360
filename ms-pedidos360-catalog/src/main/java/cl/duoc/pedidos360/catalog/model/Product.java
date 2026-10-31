@@ -26,8 +26,21 @@ public class Product {
     @Column(name = "NAME", nullable = false)
     private String name;
 
-    @Column(name = "DESCRIPTION")
+    @Column(name = "DESCRIPTION", length = 1000)
     private String description;
+
+    @Column(name = "BRAND")
+    private String brand;
+
+    @Column(name = "CATEGORY")
+    private String category;
+
+    /** Ruta de la imagen servida por el frontend (ej. /products/logitech-g915.webp). */
+    @Column(name = "IMAGE_URL")
+    private String imageUrl;
+
+    @Embedded
+    private ProductSpecifications specifications;
 
     @Column(name = "PRICE", nullable = false)
     private Double price;

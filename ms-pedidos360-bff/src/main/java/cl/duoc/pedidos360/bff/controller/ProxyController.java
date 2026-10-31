@@ -5,29 +5,27 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.net.URI;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Map;
 
 /**
- * Único controlador del BFF: actúa como intermediario ("reverse proxy")
- * entre el frontend Angular y los microservicios internos.
+ * Intermediario ("reverse proxy") entre el frontend y los microservicios internos.
  *
- * Spring Security ya validó el JWT (firma, issuer, audience, expiración) y
- * autorizó el rol requerido para esta ruta (ver SecurityConfig) ANTES de que
- * la petición llegue aquí. Este controlador solo reenvía la petición —
- * mismo método, mismo path, mismos query params, mismo body — hacia el
- * microservicio real, agregando el mismo header Authorization, de modo que
- * ese microservicio también pueda validar el token (defensa en profundidad).
+ * Spring Security ya validó el JWT y autorizó método + ruta + rol (SecurityConfig)
+ * ANTES de llegar aquí. Este controlador reenvía la petición —mismo método, ruta,
+ * query params y cuerpo— al microservicio correspondiente, con el mismo header
+ * Authorization para que ese microservicio también valide el token.
  *
- * Ejemplos de mapeo:
- *   GET  /api/orders          -> http://ms-orders:8081/api/orders
+ *   GET  /api/orders           -> http://ms-orders:8081/api/orders
  *   POST /api/catalog/products -> http://ms-catalog:8082/api/catalog/products
- *   GET  /api/reports/summary -> http://ms-report:8084/api/reports/summary
  */
 @RestController
 public class ProxyController {
@@ -41,35 +39,41 @@ public class ProxyController {
     }
 
     @RequestMapping("/api/{service}/**")
-    public ResponseEntity<byte[]> proxy(jakarta.servlet.http.HttpServletRequest request,
-                                         @org.springframework.web.bind.annotation.PathVariable String service) {
+    public ResponseEntity<byte[]> proxy(HttpServletRequest request, @PathVariable String service) {
 
         String baseUrl = serviceBaseUrls.get(service);
         if (baseUrl == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Servicio '" + service + "' no reconocido por el BFF");
         }
 
-        String targetUrl = baseUrl + request.getRequestURI()
-                + (request.getQueryString() != null ? "?" + request.getQueryString() : "");
+        // URI.create: la ruta y los query params ya vienen codificados desde el navegador;
+        // así no se vuelven a codificar.
+        URI target = URI.create(baseUrl + request.getRequestURI()
+                + (request.getQueryString() != null ? "?" + request.getQueryString() : ""));
 
+        RestClient.RequestBodySpec spec = restClient.method(HttpMethod.valueOf(request.getMethod()))
+                .uri(target)
+                .headers(headers -> copyForwardableHeaders(request, headers));
+
+        // Solo se envía cuerpo cuando la petición trae uno (POST/PUT/PATCH con JSON).
+        // Un GET no lleva cuerpo: pasar null aquí provocaba un error interno.
         byte[] body = readBody(request);
+        if (body.length > 0) {
+            spec = spec.body(body);
+        }
 
-        return restClient.method(HttpMethod.valueOf(request.getMethod()))
-                .uri(targetUrl)
-                .headers(headers -> copyForwardableHeaders(request, headers))
-                .body(body != null && body.length > 0 ? body : null)
-                .exchange((req, resp) -> {
-                    byte[] responseBody = resp.getBody() != null ? resp.getBody().readAllBytes() : new byte[0];
-                    HttpHeaders responseHeaders = new HttpHeaders();
-                    resp.getHeaders().forEach((name, values) -> {
-                        // Content-Length/Transfer-Encoding los recalcula Spring al responder.
-                        if (!name.equalsIgnoreCase(HttpHeaders.CONTENT_LENGTH)
-                                && !name.equalsIgnoreCase(HttpHeaders.TRANSFER_ENCODING)) {
-                            responseHeaders.addAll(name, values);
-                        }
-                    });
-                    return ResponseEntity.status(resp.getStatusCode()).headers(responseHeaders).body(responseBody);
-                });
+        return spec.exchange((req, resp) -> {
+            byte[] responseBody = resp.getBody().readAllBytes();
+            HttpHeaders responseHeaders = new HttpHeaders();
+            resp.getHeaders().forEach((name, values) -> {
+                // Content-Length/Transfer-Encoding los recalcula Spring al responder.
+                if (!name.equalsIgnoreCase(HttpHeaders.CONTENT_LENGTH)
+                        && !name.equalsIgnoreCase(HttpHeaders.TRANSFER_ENCODING)) {
+                    responseHeaders.addAll(name, values);
+                }
+            });
+            return ResponseEntity.status(resp.getStatusCode()).headers(responseHeaders).body(responseBody);
+        });
     }
 
     /** Reenvía Authorization (el JWT) y Content-Type; el resto de headers de infraestructura no se propagan. */
@@ -78,7 +82,7 @@ public class ProxyController {
         while (names != null && names.hasMoreElements()) {
             String name = names.nextElement();
             if (name.equalsIgnoreCase(HttpHeaders.AUTHORIZATION) || name.equalsIgnoreCase(HttpHeaders.CONTENT_TYPE)) {
-                headers.addAll(name, java.util.Collections.list(request.getHeaders(name)));
+                headers.addAll(name, Collections.list(request.getHeaders(name)));
             }
         }
     }
@@ -87,7 +91,7 @@ public class ProxyController {
         try {
             return request.getInputStream().readAllBytes();
         } catch (Exception e) {
-            return null;
+            return new byte[0];
         }
     }
 }

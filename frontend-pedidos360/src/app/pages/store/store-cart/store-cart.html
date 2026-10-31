@@ -1,0 +1,58 @@
+<h1>Tu carrito</h1>
+
+@if (cart.isEmpty()) {
+  <div class="empty">
+    <h2>Tu carrito está vacío</h2>
+    <p>Agrega productos desde la tienda para armar tu pedido.</p>
+    <a routerLink="/tienda" class="primary">Ir a la tienda</a>
+  </div>
+} @else {
+  <div class="layout">
+    <section class="lines" aria-label="Productos del carrito">
+      @for (line of cart.lines(); track line.productId) {
+        <article class="line" [class.problem]="line.stock <= 0 || line.quantity > line.stock">
+          <a class="thumb" [routerLink]="['/tienda/producto', line.productId]">
+            @if (line.image) {
+              <img [src]="line.image" [alt]="line.name" />
+            }
+          </a>
+          <div class="line-info">
+            <a [routerLink]="['/tienda/producto', line.productId]" class="name">{{ line.name }}</a>
+            <span class="meta">{{ line.brand }}, {{ price(line.price) }} c/u</span>
+            @if (line.stock <= 0) {
+              <span class="warn">Este producto se quedó sin stock. Quítalo para continuar.</span>
+            } @else if (line.quantity > line.stock) {
+              <span class="warn">Solo quedan {{ line.stock }} unidades. Ajusta la cantidad.</span>
+            }
+          </div>
+          <div class="stepper" role="group" [attr.aria-label]="'Cantidad de ' + line.name">
+            <button type="button" (click)="decrease(line)" aria-label="Quitar una unidad">−</button>
+            <span>{{ line.quantity }}</span>
+            <button type="button" (click)="increase(line)" [disabled]="line.quantity >= line.stock" aria-label="Agregar una unidad">+</button>
+          </div>
+          <strong class="subtotal">{{ price(line.price * line.quantity) }}</strong>
+          <button type="button" class="remove" (click)="remove(line)" [attr.aria-label]="'Quitar ' + line.name">Quitar</button>
+        </article>
+      }
+      <a routerLink="/tienda" class="continue">Seguir comprando</a>
+    </section>
+
+    <aside class="summary" aria-label="Resumen del pedido">
+      <h2>Resumen</h2>
+      <dl>
+        <div><dt>Productos</dt><dd>{{ cart.count() }}</dd></div>
+        <div><dt>Cliente</dt><dd>{{ auth.displayName() }}</dd></div>
+        <div class="total"><dt>Total</dt><dd>{{ price(cart.total()) }}</dd></div>
+      </dl>
+      <p class="note">El total final se calcula con el precio vigente de cada producto al confirmar.</p>
+
+      @if (error()) {
+        <p class="error" role="alert">{{ error() }}</p>
+      }
+
+      <button type="button" class="primary wide" (click)="placeOrder()" [disabled]="placing() || hasStockProblem()">
+        {{ placing() ? 'Confirmando pedido...' : 'Confirmar pedido' }}
+      </button>
+    </aside>
+  </div>
+}

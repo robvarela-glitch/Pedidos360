@@ -10,32 +10,27 @@ interno que corresponda (`orders`, `catalog`, `notify`, `report`, `audit`).
 
 | Validación | Mecanismo | Si falla |
 |---|---|---|
-| **Firma** | `JwtDecoders.fromIssuerLocation(issuerUri)` descarga el JWKS del tenant y verifica la firma RS256 | 401 |
-| **Issuer** | Incluido en `JwtValidators.createDefaultWithIssuer(issuerUri)` | 401 |
-| **Expiración** | Incluida en el mismo `createDefaultWithIssuer` (`exp`/`nbf`) | 401 |
-| **Audience** | Validador propio (Spring Security no lo trae por defecto), contra `pedidos360.security.audience` | 401 |
+| **Firma** | `NimbusJwtDecoder.withJwkSetUri(...)` con las claves del tenant (`JwtSecuritySupport`) | 401 |
+| **Issuer** | Debe ser el tenant (formato v1 `sts.windows.net` o v2 `login.microsoftonline.com/.../v2.0`) | 401 |
+| **Expiración** | `JwtTimestampValidator` (`exp`/`nbf`) | 401 |
+| **Audience** | Validador propio contra `pedidos360.security.audiences` (`api://<client-id>` y `<client-id>`) | 401 |
+| **Scope** | El claim `scp` debe incluir `access_as_user` | 401 |
 | **Roles** | Claim `roles` del token → `ROLE_xxx`, usado en `authorizeHttpRequests` | 403 si falta el rol |
 
 Este es el mismo patrón que ya usan `orders`, `catalog`, `notify`, `report` y `audit`
 (ver sus `SecurityConfig`), pero el BFF además agrega **reglas de autorización por rol**
 (pendiente en el resto de los servicios, ver `PARTE-AGUSTIN.md` sección 8).
 
-## ⚠️ Esquema de roles — a confirmar con Daniel (App roles en Entra ID)
+## Roles (App roles de Entra ID, claim `roles`)
 
-Como todavía no está definido el formato exacto de los roles/claims (pendiente en
-`PARTE-AGUSTIN.md`), asumí este esquema. Avisen si Daniel lo define distinto, para
-ajustar `SecurityConfig`:
-
-| Rol (App role en Entra ID) | Puede |
+| Rol | Rutas permitidas en el BFF |
 |---|---|
-| `Orders.Read` | Ver pedidos (`GET /api/orders/**`) |
-| `Orders.Write` | Crear/modificar/cancelar pedidos |
-| `Catalog.Read` | Ver catálogo (`GET /api/catalog/**`) |
-| `Catalog.Write` | Crear/editar/eliminar productos |
-| `Reports.Read` | Ver reportes (`GET /api/reports/**`) |
-| `Audit.Read` | Ver bitácora de auditoría (`GET /api/audit/**`) |
-| `Notify.Read` | Ver notificaciones (`GET /api/notify/**`) |
-| `Admin` | Acceso total a todo lo anterior |
+| `Cliente` | `GET /api/me`, `GET /api/catalog/products[/{id}]`, `GET/POST /api/orders`, `GET/DELETE /api/orders/{id}`, `GET /api/notify/notifications/**` |
+| `Operador` | Lo del Cliente + `PATCH /api/orders/{id}/status` |
+| `Admin` | Todo lo anterior + `POST/PUT/DELETE /api/catalog/products`, `GET /api/reports/**`, `GET /api/audit/**`, `GET/POST/DELETE /api/rabbitadmin/**` |
+
+Cualquier otra combinación de método y ruta se rechaza (`denyAll`). Sin rol asignado en Entra ID se aplica `DEFAULT_ROLE` (por defecto `Cliente`).
+La propiedad del recurso (un Cliente solo ve sus pedidos) la aplica cada microservicio con el claim `oid`.
 
 ## Rutas y a qué microservicio reenvían
 
@@ -50,6 +45,7 @@ mismo método, path, query params y body — hacia la URL base configurada para 
 | `/api/notify/**` | ms-pedidos360-notify (8083) | `NOTIFY_SERVICE_URL` |
 | `/api/reports/**` | ms-pedidos360-report (8084) | `REPORT_SERVICE_URL` |
 | `/api/audit/**` | ms-pedidos360-audit (8085) | `AUDIT_SERVICE_URL` |
+| `/api/rabbitadmin/**` | ms-pedidos360-rabbitadmin (8086) | `RABBITADMIN_SERVICE_URL` |
 
 ## Ejecutar
 
@@ -72,8 +68,8 @@ mvn spring-boot:run
 mvn test
 ```
 - `BffApplicationTests`: el contexto de Spring levanta (seguridad + enrutamiento).
-- `ProxyControllerSecurityTest`: sin token → 401; con rol insuficiente → 403 (probado
-  para pedidos, escritura de pedidos, y auditoría); servicio no reconocido → 404.
+- `ProxyControllerSecurityTest`: sin token → 401; rol insuficiente → 403; método o servicio no
+  declarado → 403; CORS permitido / rechazado; `/api/me` devuelve la identidad del token.
 
 Manualmente, con un token real:
 ```bash

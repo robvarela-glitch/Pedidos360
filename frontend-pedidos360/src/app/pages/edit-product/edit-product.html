@@ -237,6 +237,8 @@
               <input
                 type="text"
                 name="sku"
+                readonly
+                title="El SKU no se puede modificar"
                 [(ngModel)]="product.sku"
                 required
                 placeholder="Ej. TEC-001"
@@ -597,7 +599,11 @@
              MENSAJE GUARDADO
         ==================================== -->
 
-        @if (saved) {
+        @if (errorMessage) {
+        <div class="api-alert">{{ errorMessage }}</div>
+      }
+
+      @if (saved) {
 
           <div class="success-message">
 

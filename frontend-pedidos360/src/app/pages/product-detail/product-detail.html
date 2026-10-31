@@ -246,24 +246,38 @@
 
           <div class="main-actions">
 
-            <button class="primary-action">
-              Agregar al pedido
-            </button>
-
-
             <button
-              class="secondary-action"
-
-              [routerLink]="[
-                '/catalog',
-                product.id,
-                'edit'
-              ]"
-            >
-              ✎ Editar producto
+              class="primary-action"
+              [routerLink]="['/orders/new']">
+              Crear un pedido
             </button>
+
+            @if (auth.isAdmin()) {
+              <button
+                class="secondary-action"
+                [routerLink]="[
+                  '/catalog',
+                  product.id,
+                  'edit'
+                ]"
+              >
+                ✎ Editar producto
+              </button>
+
+              <button
+                class="secondary-action"
+                [disabled]="working"
+                (click)="deactivate()"
+              >
+                Desactivar
+              </button>
+            }
 
           </div>
+
+          @if (message) {
+            <div class="api-alert" [class.success]="messageOk">{{ message }}</div>
+          }
 
         </div>
 

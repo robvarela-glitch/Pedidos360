@@ -1,0 +1,10 @@
+# Carga automática de los dashboards de infra/grafana/dashboards
+apiVersion: 1
+providers:
+  - name: pedidos360
+    folder: Pedidos360
+    type: file
+    disableDeletion: true
+    allowUiUpdates: false
+    options:
+      path: /var/lib/grafana/dashboards

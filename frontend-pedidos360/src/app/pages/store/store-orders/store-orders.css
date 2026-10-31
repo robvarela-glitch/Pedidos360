@@ -1,0 +1,147 @@
+:host {
+  display: block;
+}
+
+h1 {
+  margin: 0 0 24px;
+  font-family: var(--wide);
+  font-stretch: 122%;
+  font-weight: 800;
+  font-size: 40px;
+  letter-spacing: -0.02em;
+}
+
+.notice {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.notice.error {
+  background: #fef3f2;
+  color: var(--danger);
+}
+
+.orders {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+  max-width: 860px;
+}
+
+.order {
+  display: block;
+  padding: 18px 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.order:hover {
+  border-color: var(--ink);
+}
+
+.order-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.id {
+  font-family: var(--wide);
+  font-stretch: 112%;
+  font-size: 18px;
+}
+
+.date {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.status {
+  margin-left: auto;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  background: #eff4ff;
+  color: var(--brand-ink);
+}
+
+.status[data-status='ENTREGADO'] {
+  background: #ecfdf3;
+  color: var(--ok);
+}
+
+.status[data-status='CANCELADO'] {
+  background: #fef3f2;
+  color: var(--danger);
+}
+
+.items {
+  margin: 10px 0 12px;
+  color: var(--ink-2);
+  font-size: 15px;
+}
+
+.track {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.seg {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--plate);
+}
+
+.seg.done {
+  background: var(--brand);
+}
+
+.order-foot {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.order-foot strong {
+  color: var(--ink);
+  font-size: 17px;
+}
+
+.empty {
+  padding: 56px 24px;
+  text-align: center;
+  background: var(--surface);
+  border: 1px dashed var(--line);
+  border-radius: 18px;
+}
+
+.empty h2 {
+  margin: 0 0 6px;
+}
+
+.empty p {
+  color: var(--muted);
+  margin: 0 0 20px;
+}
+
+.primary {
+  display: inline-flex;
+  border-radius: 12px;
+  padding: 13px 20px;
+  background: var(--brand);
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+}

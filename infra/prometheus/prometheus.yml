@@ -1,0 +1,38 @@
+# =========================================================================
+# Prometheus - Pedidos360
+# Recolecta métricas cada 15 s desde la red interna de Docker:
+#   - Los 7 microservicios Spring Boot: /actuator/prometheus (Micrometer)
+#   - Los 2 nodos RabbitMQ: plugin rabbitmq_prometheus (puerto 15692)
+# Ninguno de estos endpoints se publica hacia Internet.
+# =========================================================================
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: pedidos360
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ['ms-bff:8080']
+        labels: { service: bff }
+      - targets: ['ms-orders:8081']
+        labels: { service: orders }
+      - targets: ['ms-catalog:8082']
+        labels: { service: catalog }
+      - targets: ['ms-notify:8083']
+        labels: { service: notify }
+      - targets: ['ms-report:8084']
+        labels: { service: report }
+      - targets: ['ms-audit:8085']
+        labels: { service: audit }
+      - targets: ['ms-rabbitadmin:8086']
+        labels: { service: rabbitadmin }
+
+  # Métricas por cola (mensajes listos, sin confirmar, consumidores) de cada nodo del clúster
+  - job_name: rabbitmq
+    metrics_path: /metrics/per-object
+    static_configs:
+      - targets: ['rabbitmq1:15692']
+        labels: { node: rabbitmq1 }
+      - targets: ['rabbitmq2:15692']
+        labels: { node: rabbitmq2 }

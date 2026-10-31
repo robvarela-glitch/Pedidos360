@@ -1,0 +1,117 @@
+@if (lastOrder(); as order) {
+  <a class="order-banner" [routerLink]="['/tienda/pedidos', order.id]">
+    <span>Tu pedido <strong>PED-{{ order.id }}</strong> está <strong>{{ status(order.status) }}</strong>.</span>
+    <span class="banner-link">Ver seguimiento</span>
+  </a>
+}
+
+@if (error()) {
+  <p class="notice error">{{ error() }}</p>
+}
+
+@if (!isFiltering() && featured(); as product) {
+  <section class="hero" aria-label="Producto destacado">
+    <div class="hero-copy">
+      <span class="hero-kicker">{{ product.category }} de {{ product.brand }}</span>
+      <h1>{{ product.name }}</h1>
+      <p>{{ product.description }}</p>
+      <div class="hero-price">
+        <strong>{{ price(product.price) }}</strong>
+        <span>{{ product.stock }} unidades disponibles</span>
+      </div>
+      <div class="hero-actions">
+        <button type="button" class="primary" (click)="addFeatured()">Agregar al carrito</button>
+        <a [routerLink]="['/tienda/producto', product.id]" class="secondary">Ver ficha técnica</a>
+      </div>
+    </div>
+    <a class="hero-plate" [routerLink]="['/tienda/producto', product.id]" tabindex="-1" aria-hidden="true">
+      @if (product.image) {
+        <img [src]="product.image" [alt]="product.name" />
+      }
+    </a>
+  </section>
+}
+
+@if (!isFiltering() && categoryTiles().length > 0) {
+  <section class="categories" aria-labelledby="categories-title">
+    <h2 id="categories-title">Comprar por categoría</h2>
+    <div class="category-grid">
+      @for (tile of categoryTiles(); track tile.name) {
+        <button type="button" class="category-tile" (click)="setCategory(tile.name)">
+          <span class="tile-plate">
+            @if (tile.image) {
+              <img [src]="tile.image" alt="" loading="lazy" />
+            }
+          </span>
+          <span class="tile-name">{{ tile.name }}</span>
+          <span class="tile-count">{{ tile.count }} {{ tile.count === 1 ? 'producto' : 'productos' }}</span>
+        </button>
+      }
+    </div>
+  </section>
+}
+
+<section class="catalog" aria-labelledby="catalog-title">
+  <div class="catalog-head">
+    <div>
+      <h2 id="catalog-title">
+        @if (category()) {
+          {{ category() }}
+        } @else if (query()) {
+          Resultados para "{{ query() }}"
+        } @else {
+          Todos los productos
+        }
+      </h2>
+      <p class="count">
+        {{ filtered().length }} {{ filtered().length === 1 ? 'producto' : 'productos' }}
+        @if (isFiltering()) {
+          <button type="button" class="link" (click)="clearFilters()">Quitar filtros</button>
+        }
+      </p>
+    </div>
+
+    <div class="toolbar">
+      <label class="sort">
+        <span>Ordenar por</span>
+        <select (change)="onSort($event)" [value]="sort()">
+          <option value="name">Nombre</option>
+          <option value="price-asc">Precio: menor a mayor</option>
+          <option value="price-desc">Precio: mayor a menor</option>
+          <option value="stock">Mayor stock</option>
+        </select>
+      </label>
+      <div class="view-toggle" role="group" aria-label="Vista">
+        <button type="button" [class.on]="view() === 'grid'" (click)="setView('grid')" [attr.aria-pressed]="view() === 'grid'" title="Cuadrícula">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"></rect><rect x="13" y="4" width="7" height="7" rx="1.5"></rect><rect x="4" y="13" width="7" height="7" rx="1.5"></rect><rect x="13" y="13" width="7" height="7" rx="1.5"></rect></svg>
+        </button>
+        <button type="button" [class.on]="view() === 'list'" (click)="setView('list')" [attr.aria-pressed]="view() === 'list'" title="Lista">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="filter-chips" role="group" aria-label="Filtrar por categoría">
+    <button type="button" [class.on]="!category()" (click)="setCategory('')">Todas</button>
+    @for (name of categories; track name) {
+      <button type="button" [class.on]="category() === name" (click)="setCategory(name)">{{ name }}</button>
+    }
+  </div>
+
+  @if (loading()) {
+    <p class="notice">Cargando productos...</p>
+  } @else if (filtered().length === 0) {
+    <div class="empty">
+      <h3>No encontramos productos con esos filtros</h3>
+      <p>Prueba con otra palabra o revisa todas las categorías.</p>
+      <button type="button" class="primary" (click)="clearFilters()">Ver todos los productos</button>
+    </div>
+  } @else {
+    <div class="products" [class.list]="view() === 'list'">
+      @for (product of filtered(); track product.id) {
+        <app-product-card [product]="product" [layout]="view()" />
+      }
+    </div>
+  }
+</section>

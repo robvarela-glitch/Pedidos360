@@ -514,6 +514,10 @@
 
       <!-- ÉXITO -->
 
+      @if (errorMessage) {
+        <div class="api-alert">{{ errorMessage }}</div>
+      }
+
       @if (saved) {
 
         <div class="success-message">

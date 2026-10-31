@@ -2,12 +2,15 @@ package cl.duoc.pedidos360.orders.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestControllerAdvice
@@ -15,20 +18,51 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(OrderNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleNotFound(OrderNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body(ex.getMessage(), HttpStatus.NOT_FOUND));
+        return build(HttpStatus.NOT_FOUND, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(OrderAccessDeniedException.class)
+    public ResponseEntity<Map<String, Object>> handleForbidden(OrderAccessDeniedException ex) {
+        return build(HttpStatus.FORBIDDEN, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(InvalidStatusTransitionException.class)
+    public ResponseEntity<Map<String, Object>> handleTransition(InvalidStatusTransitionException ex) {
+        return build(HttpStatus.CONFLICT, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(InvalidOrderException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidOrder(InvalidOrderException ex) {
+        return build(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage(), null);
+    }
+
+    @ExceptionHandler(CatalogUnavailableException.class)
+    public ResponseEntity<Map<String, Object>> handleCatalog(CatalogUnavailableException ex) {
+        return build(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage(), null);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {
-        return ResponseEntity.badRequest().body(body("Datos inválidos en la solicitud", HttpStatus.BAD_REQUEST));
+        List<String> details = ex.getBindingResult().getFieldErrors().stream()
+                .map(e -> e.getField() + ": " + e.getDefaultMessage())
+                .toList();
+        return build(HttpStatus.BAD_REQUEST, "Datos inválidos en la solicitud", details);
     }
 
-    private Map<String, Object> body(String message, HttpStatus status) {
-        Map<String, Object> map = new HashMap<>();
+    @ExceptionHandler({HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class})
+    public ResponseEntity<Map<String, Object>> handleBadRequest(Exception ex) {
+        return build(HttpStatus.BAD_REQUEST, "Formato de la solicitud inválido", null);
+    }
+
+    private ResponseEntity<Map<String, Object>> build(HttpStatus status, String message, List<String> details) {
+        Map<String, Object> map = new LinkedHashMap<>();
         map.put("timestamp", LocalDateTime.now());
         map.put("status", status.value());
         map.put("error", status.getReasonPhrase());
         map.put("message", message);
-        return map;
+        if (details != null) {
+            map.put("details", details);
+        }
+        return ResponseEntity.status(status).body(map);
     }
 }

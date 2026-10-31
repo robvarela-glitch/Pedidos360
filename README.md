@@ -1,180 +1,99 @@
-# Backend Pedidos360
+# Pedidos360
 
-## Integrantes
+Sistema de gestión de pedidos Cloud Native — Desarrollo Cloud Native I (Duoc UC).
 
-- Roberto Varela
-- Daniel More
-- Benjamín Madariaga
-- Agustín Moya
+**Integrantes:** Roberto Varela · Daniel More · Benjamín Madariaga · Agustín Moya
 
-Microservicios: `orders`, `catalog`, `notify`, `report`, `audit`.
-Infraestructura: Oracle, RabbitMQ, Kafka + Zookeeper, Docker Compose, EC2.
+| Componente | Tecnología | Puerto |
+|---|---|---|
+| `frontend-pedidos360` | Angular 22 + MSAL (Microsoft Entra ID) servido con nginx | 80 (4200 en `ng serve`) |
+| `ms-pedidos360-bff` | Spring Boot · único punto de entrada, valida JWT y autoriza por rol | 8080 |
+| `ms-pedidos360-orders` | Spring Boot · pedidos (Oracle) · productor RabbitMQ | 8081 |
+| `ms-pedidos360-catalog` | Spring Boot · catálogo (Oracle) · productor RabbitMQ | 8082 |
+| `ms-pedidos360-notify` | Spring Boot · consumidor RabbitMQ (direct) · notificaciones | 8083 |
+| `ms-pedidos360-report` | Spring Boot · consumidor RabbitMQ (topic `order.*`) · reportes | 8084 |
+| `ms-pedidos360-audit` | Spring Boot · consumidor RabbitMQ (topic `#`) · auditoría | 8085 |
+| `ms-pedidos360-rabbitadmin` | Spring Boot · **administrador de RabbitMQ** (colas, exchanges, bindings) | 8086 |
+| `infra` | Docker Compose: Oracle Free, **clúster RabbitMQ de 2 nodos**, Kafka opcional | — |
 
-## 1. Arquitectura y flujo de eventos
+## 1. Arquitectura
 
 ```
-                 (JWT del BFF de Benjamín)
-Angular (Roberto) -> BFF (Benjamín) -> ms-pedidos360-orders (8081)
-                                            |         \
-                                    RabbitMQ           Kafka
-                                 orders.notifications   orders.events
-                                       |                  /        \
-                              ms-pedidos360-notify   ms-report   ms-audit
-                                    (8083)             (8084)      (8085)
+Navegador ──HTTPS──> AWS API Gateway (API Manager: autorizador JWT de Entra ID + rutas explícitas + CORS)
+                         │
+                         ├── GET /, /{proxy+} ──> frontend (nginx, EC2:80)
+                         └── /api/... ─────────> ms-bff (EC2:8080) ── valida JWT y rol ──┐
+                                                                                         │ reenvía el mismo JWT
+             ┌──────────────────┬──────────────────┬───────────────┬──────────────┬───────┘
+          ms-orders         ms-catalog         ms-notify      ms-report      ms-audit      ms-rabbitadmin
+          (Oracle)          (Oracle)           (Oracle)       (Oracle)       (Oracle)      (AMQP + API mgmt)
+              │                  │
+              │ publica          │ publica
+              ▼                  ▼
+  pedidos360.orders.direct (direct) ──[notify.order]──> pedidos360.notify.orders ──> ms-notify
+  pedidos360.events.topic  (topic)  ──[order.*]──────> pedidos360.report.orders ──> ms-report
+                                    ──[#]────────────> pedidos360.audit.events  ──> ms-audit
+  pedidos360.dlx           (direct) ──[<cola>.dlq]───> pedidos360.notify.orders.dlq / .report.orders.dlq / .audit.events.dlq
 
-ms-pedidos360-catalog (8082) -> API REST de productos, independiente,
-                                 también protegida con el mismo JWT.
+  RabbitMQ: clúster de 2 nodos (rabbit@rabbitmq1 + rabbit@rabbitmq2)
 ```
 
-Cada microservicio valida el JWT como *Resource Server* (igual que la guía
-de la Semana 04, Sesión 3): revisa `issuer` (tenant de Azure AD) y
-`audience` (que el token venga dirigido a esa API en particular).
+### Seguridad (Microsoft Entra ID)
+- Login OAuth 2.0 / OpenID Connect con **Authorization Code + PKCE** (MSAL Browser).
+- El frontend pide el scope `api://<client-id>/access_as_user`; MSAL agrega `Authorization: Bearer` solo a las llamadas al backend.
+- **Todos** los servicios validan firma, `exp`, `iss` (tenant), `aud` (API de Pedidos360) y `scp=access_as_user` (`JwtSecuritySupport`).
+- Roles = App roles de Entra ID en el claim `roles`: **Admin**, **Operador**, **Cliente** (sin rol asignado ⇒ `DEFAULT_ROLE`, por defecto `Cliente`).
+- Identidad del usuario = claim `oid`. Los pedidos se asocian a esa identidad; un Cliente solo ve y cancela **sus** pedidos (403 si intenta uno ajeno).
+- El BFF autoriza con una lista explícita de método + ruta (`denyAll` para el resto) y configura CORS con orígenes explícitos.
 
-## 2. Requisitos en tu computador
+| Rol | Puede |
+|---|---|
+| Cliente | Ver catálogo, crear pedidos, ver y cancelar (en CREADO) **sus** pedidos, ver sus notificaciones |
+| Operador | Todo lo anterior sobre **todos** los pedidos + cambiar estado (CREADO → EN_PREPARACION → DESPACHADO → ENTREGADO, o CANCELADO) |
+| Admin | Todo lo anterior + administrar catálogo, reportes, auditoría y RabbitMQ (`/api/rabbitadmin`) |
 
-- **Java 17**
-- **Maven 3.9+** (tu compañero ya avisó que hace falta — `mvn -v` para
-  comprobar que está instalado)
-- **Docker Desktop** (o Docker Engine + Docker Compose) para la
-  infraestructura (Oracle, RabbitMQ, Kafka)
+## 2. Levantar todo en local (Windows / PowerShell)
 
-## 3. Levantar todo con Docker Compose (recomendado)
+Requisitos: Docker Desktop (≥ 8 GB de RAM asignados), Java 17 y Maven 3.9 (para pruebas), Node 22 (para `ng serve`).
 
-```bash
-cd Pedidos360-main/infra
-# En PowerShell: Copy-Item .env.example .env
-# En bash:       cp .env.example .env
-# Completa AZURE_TENANT_ID cuando Daniel lo tenga.
-docker compose up --build     # levanta infra + los 5 microservicios
+```powershell
+cd Pedidos360-main\infra
+Copy-Item .env.example .env        # completar AZURE_TENANT_ID y API_CLIENT_ID
+# Si antes se levantó la versión anterior (proyecto "infra"), bajarla primero (NO borra volúmenes):
+docker compose -p infra down
+docker compose up --build -d
+docker compose ps                  # todos "healthy" (Oracle tarda 1-2 min la primera vez)
 ```
 
-Esto construye las imágenes de cada microservicio (usando su `Dockerfile`)
-y levanta:
+Abrir **http://localhost** (frontend en nginx, que reenvía `/api` al BFF) e iniciar sesión con Microsoft.
+Para desarrollo con recarga: `cd frontend-pedidos360; npm ci; npm start` y abrir http://localhost:4200 (usa `public/config.json`).
 
-| Servicio         | Puerto  |
-|------------------|---------|
-| Oracle           | 1521    |
-| RabbitMQ (AMQP)  | 5672    |
-| RabbitMQ (panel) | 15672   |
-| Kafka            | 9092    |
-| ms-orders        | 8081    |
-| ms-catalog       | 8082    |
-| ms-notify        | 8083    |
-| ms-report        | 8084    |
-| ms-audit         | 8085    |
+Puertos solo locales (127.0.0.1): Oracle 1522, RabbitMQ 5672 / panel 15672 (nodo 1) y 15673 (nodo 2), microservicios 8081-8086.
 
-Para apagar todo: `docker compose down` (agrega `-v` si además quieres
-borrar los datos de Oracle).
+## 3. Pruebas
 
-## 4. Levantar SOLO la infraestructura y correr los microservicios con Maven
+- Pruebas automáticas (por servicio): `mvn test` → ver [docs/PRUEBAS.md](docs/PRUEBAS.md).
+- Pruebas de extremo a extremo con token real, DLQ, clúster y persistencia: [docs/PRUEBAS.md](docs/PRUEBAS.md).
 
-Útil mientras programas, para ver logs y recompilar rápido sin rearmar
-imágenes Docker cada vez.
+## 4. Documentación
 
-```bash
-# 1) Solo infraestructura (Oracle, RabbitMQ, Kafka+Zookeeper)
-cd Pedidos360-main/infra
-docker compose up oracle-db rabbitmq zookeeper kafka
+| Documento | Contenido |
+|---|---|
+| [docs/ENTRA-ID.md](docs/ENTRA-ID.md) | App roles, usuarios, redirect URIs y versión del token |
+| [docs/DESPLIEGUE-AWS.md](docs/DESPLIEGUE-AWS.md) | EC2 + docker-compose + API Gateway con autorizador JWT |
+| [docs/PRUEBAS.md](docs/PRUEBAS.md) | Comandos PowerShell, resultados esperados y evidencias |
+| [docs/GUION-PRESENTACION.md](docs/GUION-PRESENTACION.md) | Guion de la Evaluación 4 punto por punto |
+| [docs/MATRIZ-CUMPLIMIENTO.md](docs/MATRIZ-CUMPLIMIENTO.md) | Rúbrica de las Evaluaciones 3 y 4 → archivo/clase que la cumple |
 
-# 2) En otra terminal, por cada microservicio:
-cd Pedidos360-main/ms-pedidos360-orders
-mvn spring-boot:run
+## 5. Variables principales (`infra/.env`)
 
-cd Pedidos360-main/ms-pedidos360-catalog
-mvn spring-boot:run
+| Variable | Uso |
+|---|---|
+| `AZURE_TENANT_ID` | Tenant de Entra ID (obligatoria) |
+| `API_CLIENT_ID` | Client ID de la App Registration (también define la audience aceptada) |
+| `DEFAULT_ROLE` | Rol para usuarios sin App role (`Cliente`; vacío = exigir rol) |
+| `CORS_ALLOWED_ORIGINS` | Orígenes permitidos por el BFF (agregar la URL del API Gateway en la nube) |
+| `ORACLE_PASSWORD`, `ORACLE_APP_PASSWORD`, `RABBITMQ_USER`, `RABBITMQ_PASSWORD`, `RABBITMQ_ERLANG_COOKIE` | Credenciales internas (cambiar en la nube) |
+| `KAFKA_ENABLED` | `true` + `docker compose --profile kafka up` para el canal Kafka opcional |
 
-cd Pedidos360-main/ms-pedidos360-notify
-mvn spring-boot:run
-
-cd Pedidos360-main/ms-pedidos360-report
-mvn spring-boot:run
-
-cd Pedidos360-main/ms-pedidos360-audit
-mvn spring-boot:run
-```
-
-Cuando corres con `mvn spring-boot:run` (fuera de Docker), los
-`application.properties` usan `localhost` por defecto para Oracle,
-RabbitMQ y Kafka, así que basta con tener la infraestructura arriba.
-
-## 5. Probar rápido que cada servicio responde
-
-```bash
-curl http://localhost:8081/api/orders/publico/ping
-curl http://localhost:8082/api/catalog/publico/ping
-curl http://localhost:8083/api/notify/publico/ping
-curl http://localhost:8084/api/reports/publico/ping
-curl http://localhost:8085/api/audit/publico/ping
-```
-
-Estos endpoints `/publico/*` no piden token (igual que `/api/publico` en la
-guía de la Sesión 3), sirven para confirmar que el servicio levantó bien
-antes de meter la autenticación en el juego.
-
-Para probar un endpoint protegido necesitas un Access Token válido
-(lo entrega Daniel/Angular vía MSAL) y mandarlo así:
-
-```bash
-curl http://localhost:8081/api/orders \
-  -H "Authorization: Bearer <ACCESS_TOKEN>"
-```
-
-## 6. Compilar sin Docker (solo para verificar que el código compila)
-
-```bash
-cd Pedidos360-main/ms-pedidos360-orders
-mvn clean package -DskipTests
-```
-
-Repetir por cada microservicio. El .jar queda en `target/`.
-
-## 7. EC2 / infraestructura (parte de Agustín)
-
-Para la presentación final, la forma más simple es desplegar todo el
-`docker-compose.yml` dentro de una sola instancia EC2:
-
-1. Levantar una instancia EC2 (Ubuntu 22.04, tipo `t3.medium` o superior
-   — Oracle + Kafka + Zookeeper consumen bastante RAM).
-2. Instalar Docker y el plugin de Docker Compose:
-   ```bash
-   sudo apt update && sudo apt install -y docker.io docker-compose-plugin
-   sudo usermod -aG docker $USER
-   ```
-3. Copiar la carpeta `Pedidos360-main` al servidor (`scp` o `git clone`
-   del repo).
-4. Abrir en el Security Group de la instancia los puertos que necesites
-   exponer hacia afuera (por ejemplo 8081-8085 para las APIs, o solo el
-   puerto del API Manager/BFF si el resto queda interno).
-5. `cd Pedidos360-main/infra && docker compose up --build -d`
-
-Si más adelante quieren separar el backend en varias instancias (una
-para Oracle, otra para el broker de mensajería, otra para los
-microservicios), la idea es la misma pero cambiando los `DB_HOST`,
-`RABBITMQ_HOST` y `KAFKA_BOOTSTRAP` de cada microservicio por la IP/DNS
-interno de la instancia correspondiente en vez de los nombres de
-servicio de docker-compose.
-
-## 8. Pendiente / próximos pasos
-
-- Cuando Daniel tenga el tenant de Azure AD listo, reemplazar
-  `AZURE_TENANT_ID` y los `pedidos360.security.audience` de cada
-  `application.properties` con los valores reales (o dejarlos por
-  variable de entorno, como ya están).
-- Revisar con Benjamín el formato exacto de los roles/claims que el BFF
-  reenvía en el JWT, para ajustar `JwtGrantedAuthoritiesConverter` si
-  hace falta.
-- Agregar reglas de autorización por rol en cada `SecurityConfig`
-  (por ahora solo exige "autenticado", no valida roles específicos).
-
-## 9. Verificación de Kafka
-
-Kafka usa dos listeners: `kafka:29092` dentro de Docker y `localhost:9092`
-desde tu computador. Luego de iniciar el entorno, verifica que los eventos
-estén llegando con:
-
-```bash
-docker compose logs -f ms-orders ms-report ms-audit
-```
-
-Al crear o actualizar un pedido, `ms-orders` publica el evento `orders.events`;
-`ms-report` y `ms-audit` deben registrarlo en sus logs y en Oracle.
+`infra/.env` está en `.gitignore`: no subirlo a GitHub.

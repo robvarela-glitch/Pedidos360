@@ -30,30 +30,39 @@
         </span>
 
         <h1>
-          Pedidos
+          {{ auth.canManageOrders() ? 'Pedidos' : 'Mis pedidos' }}
         </h1>
 
         <p>
-          Administra, monitorea y realiza seguimiento de los pedidos registrados.
+          @if (auth.canManageOrders()) {
+            Gestiona y actualiza el estado de todos los pedidos registrados.
+          } @else {
+            Consulta el estado y el historial de tus pedidos.
+          }
+          <span class="role-chip">{{ auth.roleLabel() }}</span>
         </p>
 
       </div>
 
 
       <a
-        routerLink="/orders/new"
+        routerLink="/operacion"
         class="new-order-button">
-
-        <span class="plus-icon">
-          +
-        </span>
-
-        Nuevo pedido
-
+        Ir a la bandeja de pedidos
       </a>
 
     </header>
 
+
+    @if (errorMessage) {
+      <div class="api-alert">
+        {{ errorMessage }}
+        <button type="button" (click)="loadOrders()">Reintentar</button>
+      </div>
+    }
+    @if (loading) {
+      <div class="api-alert info">Cargando pedidos desde el backend...</div>
+    }
 
     <!-- RESUMEN -->
     <section class="summary-grid">
@@ -366,7 +375,7 @@
                         </strong>
 
                         <small>
-                          Pedido registrado
+                          {{ order.items.length }} producto(s)
                         </small>
 
                       </div>
@@ -490,11 +499,10 @@
           </div>
 
           <h3>
-            No encontramos pedidos
+            {{ orders.length === 0 ? 'Aún no hay pedidos' : 'No encontramos pedidos' }}
           </h3>
-
           <p>
-            Prueba con otro ID, cliente o estado.
+            {{ orders.length === 0 ? 'Crea un pedido desde "Nuevo pedido".' : 'Prueba con otro ID, cliente o estado.' }}
           </p>
 
         </div>

@@ -8,18 +8,17 @@ import org.springframework.test.context.TestPropertySource;
 
 @SpringBootTest
 @TestPropertySource(properties = {
-        "spring.security.oauth2.resourceserver.jwt.issuer-uri=https://login.microsoftonline.com/test-tenant/v2.0",
-        "pedidos360.security.audience=api://ms-pedidos360-bff",
+        "AZURE_TENANT_ID=test-tenant",
         "services.orders.url=http://localhost:8081",
         "services.catalog.url=http://localhost:8082",
         "services.notify.url=http://localhost:8083",
         "services.report.url=http://localhost:8084",
-        "services.audit.url=http://localhost:8085"
+        "services.audit.url=http://localhost:8085",
+        "services.rabbitadmin.url=http://localhost:8086"
 })
 class BffApplicationTests {
 
-    // Reemplaza el JwtDecoder real: evita que el contexto de test intente
-    // contactar a un tenant de Azure AD inexistente ("test-tenant") al levantar.
+    // Reemplaza el JwtDecoder real: el test no necesita descargar las claves del tenant.
     @MockBean
     private JwtDecoder jwtDecoder;
 

@@ -1,0 +1,39 @@
+<h1>Mis pedidos</h1>
+
+@if (loading()) {
+  <p class="notice">Cargando tus pedidos...</p>
+} @else if (error()) {
+  <p class="notice error">{{ error() }}</p>
+} @else if (orders().length === 0) {
+  <div class="empty">
+    <h2>Todavía no tienes pedidos</h2>
+    <p>Cuando confirmes una compra, aquí podrás seguir cada etapa.</p>
+    <a routerLink="/tienda" class="primary">Ir a la tienda</a>
+  </div>
+} @else {
+  <ol class="orders">
+    @for (order of orders(); track order.id) {
+      <li>
+        <a class="order" [routerLink]="['/tienda/pedidos', order.id]">
+          <div class="order-head">
+            <strong class="id">PED-{{ order.id }}</strong>
+            <span class="date">{{ order.date }}</span>
+            <span class="status" [attr.data-status]="order.status">{{ status(order.status) }}</span>
+          </div>
+          <p class="items">{{ itemsSummary(order) }}</p>
+          @if (order.status !== 'CANCELADO') {
+            <div class="track" aria-hidden="true">
+              @for (step of steps; track step.status; let i = $index) {
+                <span class="seg" [class.done]="i <= progress(order)"></span>
+              }
+            </div>
+          }
+          <div class="order-foot">
+            <span>{{ order.items.length }} {{ order.items.length === 1 ? 'producto' : 'productos' }}</span>
+            <strong>{{ price(order.total) }}</strong>
+          </div>
+        </a>
+      </li>
+    }
+  </ol>
+}

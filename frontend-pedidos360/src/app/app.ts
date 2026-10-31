@@ -7,7 +7,6 @@ import {
 
 import {
   Router,
-  RouterLink,
   RouterOutlet
 } from '@angular/router';
 
@@ -25,13 +24,14 @@ import {
 
 import { filter } from 'rxjs/operators';
 
+import { appSettings } from './core/config/app-config';
+
 
 @Component({
   selector: 'app-root',
 
   imports: [
-    RouterOutlet,
-    RouterLink
+    RouterOutlet
   ],
 
   styleUrl: './app.css',
@@ -104,9 +104,13 @@ export class App implements OnInit {
     this.checkLoginStatus();
 
 
+    // Solo se redirige desde la portada o el login: así un recargo de página
+    // (por ejemplo /tienda/carrito) no saca al usuario de donde estaba.
     setTimeout(() => {
 
-      if (this.isLoggedIn) {
+      const path = window.location.pathname;
+
+      if (this.isLoggedIn && (path === '/' || path === '/login')) {
 
         this.goToDashboard();
 
@@ -195,12 +199,13 @@ export class App implements OnInit {
 
 
     console.log(
-      'Redirigiendo al Dashboard...'
+      'Redirigiendo al inicio según el rol...'
     );
 
 
+    // /inicio envía a cada rol a su página: tienda, bandeja o panel
     this.router.navigate(
-      ['/dashboard'],
+      ['/inicio'],
       {
         replaceUrl: true
       }
@@ -216,7 +221,9 @@ export class App implements OnInit {
     this.msalService.loginRedirect({
 
       scopes: [
-        'User.Read'
+        'openid',
+        'profile',
+        appSettings().apiScope
       ]
 
     });
