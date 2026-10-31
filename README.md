@@ -14,9 +14,13 @@ Sistema de gestión de pedidos Cloud Native — Desarrollo Cloud Native I (Duoc 
 | `ms-pedidos360-report` | Spring Boot · consumidor RabbitMQ (topic `order.*`) · reportes | 8084 |
 | `ms-pedidos360-audit` | Spring Boot · consumidor RabbitMQ (topic `#`) · auditoría | 8085 |
 | `ms-pedidos360-rabbitadmin` | Spring Boot · **administrador de RabbitMQ** (colas, exchanges, bindings) | 8086 |
-| `infra` | Docker Compose: Oracle Free, **clúster RabbitMQ de 2 nodos**, Kafka opcional | — |
+| Prometheus | Recolecta métricas de los 7 microservicios y de los 2 nodos RabbitMQ | 9090 (solo local) |
+| Grafana | Dashboard **Pedidos360 — Observabilidad** | 3000 (solo local) |
+| `infra` | Docker Compose: Oracle Free, **clúster RabbitMQ de 2 nodos**, Prometheus, Grafana, Kafka opcional | — |
 
 ## 1. Arquitectura
+
+Diagrama del despliegue objetivo en AWS. En local, el navegador entra por http://localhost (nginx) en lugar del API Gateway.
 
 ```
 Navegador ──HTTPS──> AWS API Gateway (API Manager: autorizador JWT de Entra ID + rutas explícitas + CORS)
@@ -36,6 +40,8 @@ Navegador ──HTTPS──> AWS API Gateway (API Manager: autorizador JWT de En
   pedidos360.dlx           (direct) ──[<cola>.dlq]───> pedidos360.notify.orders.dlq / .report.orders.dlq / .audit.events.dlq
 
   RabbitMQ: clúster de 2 nodos (rabbit@rabbitmq1 + rabbit@rabbitmq2)
+
+  Observabilidad: Prometheus ──lee /actuator/prometheus (7 servicios) y :15692 (2 nodos RabbitMQ)──> Grafana
 ```
 
 ### Seguridad (Microsoft Entra ID)
@@ -68,14 +74,31 @@ docker compose ps                  # todos "healthy" (Oracle tarda 1-2 min la pr
 Abrir **http://localhost** (frontend en nginx, que reenvía `/api` al BFF) e iniciar sesión con Microsoft.
 Para desarrollo con recarga: `cd frontend-pedidos360; npm ci; npm start` y abrir http://localhost:4200 (usa `public/config.json`).
 
-Puertos solo locales (127.0.0.1): Oracle 1522, RabbitMQ 5672 / panel 15672 (nodo 1) y 15673 (nodo 2), microservicios 8081-8086.
+Puertos solo locales (127.0.0.1): Oracle 1522, RabbitMQ 5672 / panel 15672 (nodo 1) y 15673 (nodo 2), microservicios 8081-8086, Prometheus 9090, Grafana 3000.
+
+| Qué | URL |
+|---|---|
+| Aplicación | http://localhost |
+| Grafana | http://localhost:3000 (usuario y clave de `GRAFANA_ADMIN_USER` / `GRAFANA_ADMIN_PASSWORD`) |
+| Prometheus | http://localhost:9090 → *Status → Targets* |
+| Panel RabbitMQ | http://localhost:15672 |
+| Salud del BFF | http://localhost:8080/actuator/health |
+
+> Si después de reconstruir contenedores la aplicación muestra **502 en `/api/me`**, nginx quedó apuntando a la IP anterior del BFF: `docker compose restart frontend`.
 
 ## 3. Pruebas
 
 - Pruebas automáticas (por servicio): `mvn test` → ver [docs/PRUEBAS.md](docs/PRUEBAS.md).
 - Pruebas de extremo a extremo con token real, DLQ, clúster y persistencia: [docs/PRUEBAS.md](docs/PRUEBAS.md).
 
-## 4. Documentación
+## 4. Observabilidad
+
+- Cada microservicio expone métricas Micrometer en `/actuator/prometheus`, accesible **solo desde la red interna de Docker**.
+- Métrica propia `pedidos360_rabbit_messages_total{queue, result}` en `ManualAckHandler`: mensajes terminados en `ack`, `retry` o `dlq`.
+- Grafana muestra servicios activos, nodos RabbitMQ, mensajes en DLQ, pedidos creados, accesos 401/403, peticiones, latencia, memoria y ACK / RETRY / DLQ por cola.
+- Detalle y demostración: [docs/OBSERVABILIDAD.md](docs/OBSERVABILIDAD.md).
+
+## 5. Documentación
 
 | Documento | Contenido |
 |---|---|
@@ -84,8 +107,9 @@ Puertos solo locales (127.0.0.1): Oracle 1522, RabbitMQ 5672 / panel 15672 (nodo
 | [docs/PRUEBAS.md](docs/PRUEBAS.md) | Comandos PowerShell, resultados esperados y evidencias |
 | [docs/GUION-PRESENTACION.md](docs/GUION-PRESENTACION.md) | Guion de la Evaluación 4 punto por punto |
 | [docs/MATRIZ-CUMPLIMIENTO.md](docs/MATRIZ-CUMPLIMIENTO.md) | Rúbrica de las Evaluaciones 3 y 4 → archivo/clase que la cumple |
+| [docs/OBSERVABILIDAD.md](docs/OBSERVABILIDAD.md) | Prometheus + Grafana: qué se mide, cómo comprobarlo y qué mostrar |
 
-## 5. Variables principales (`infra/.env`)
+## 6. Variables principales (`infra/.env`)
 
 | Variable | Uso |
 |---|---|
@@ -94,6 +118,7 @@ Puertos solo locales (127.0.0.1): Oracle 1522, RabbitMQ 5672 / panel 15672 (nodo
 | `DEFAULT_ROLE` | Rol para usuarios sin App role (`Cliente`; vacío = exigir rol) |
 | `CORS_ALLOWED_ORIGINS` | Orígenes permitidos por el BFF (agregar la URL del API Gateway en la nube) |
 | `ORACLE_PASSWORD`, `ORACLE_APP_PASSWORD`, `RABBITMQ_USER`, `RABBITMQ_PASSWORD`, `RABBITMQ_ERLANG_COOKIE` | Credenciales internas (cambiar en la nube) |
+| `GRAFANA_ADMIN_USER`, `GRAFANA_ADMIN_PASSWORD` | Acceso a Grafana |
 | `KAFKA_ENABLED` | `true` + `docker compose --profile kafka up` para el canal Kafka opcional |
 
 `infra/.env` está en `.gitignore`: no subirlo a GitHub.
